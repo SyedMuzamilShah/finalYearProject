@@ -1,0 +1,24 @@
+{
+    "data": {
+        "request_id": "1741834047,cdadcf7f-6082-497e-aa9d-48b88d55eb0a",
+        "time_used": 555,
+        "confidence": 59.959,
+        "thresholds": {
+            "1e-3": 62.327,
+            "1e-4": 69.101,
+            "1e-5": 73.975
+        },
+        "faces2": [
+            {
+                "face_token": "f098d5570340baa0687a4b987306e84a",
+                "face_rectangle": {
+                    "top": 72,
+                    "left": 129,
+                    "width": 107,
+                    "height": 107
+                }
+            }
+        ],
+        "image_id2": "FHv74vF8UENmrmPY5kYshQ=="
+    }
+}

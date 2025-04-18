@@ -1,0 +1,37 @@
+{
+    "request_id": "1741833522,6c3d64dc-47f8-42dd-9114-831c9f749891",
+    "time_used": 821,
+    "confidence": 97.389,
+    "thresholds": {
+        "1e-3": 62.327,
+        "1e-4": 69.101,
+        "1e-5": 73.975
+    },
+    "faces1": [
+        {
+            "face_token": "31398285a406123fc16ccb69a997c40e",
+            "face_rectangle": {
+                "top": 49,
+                "left": 74,
+                "width": 74,
+                "height": 74
+            }
+        }
+    ],
+    "faces2": [
+        {
+            "face_token": "226681b48870611fdae36adab70f0d52",
+            "face_rectangle": {
+                "top": 49,
+                "left": 74,
+                "width": 74,
+                "height": 74
+            }
+        }
+    ],
+    "image_id1": "MdktLJVk49QBzbFdNJPBSg==",
+    "image_id2": "MdktLJVk49QBzbFdNJPBSg=="
+}
+
+
+
