@@ -1,6 +1,39 @@
 import { STATUS_CODES } from "../../constant.js";
 import { officeAdminModel } from "../Models/Admin.Model.js";
 import { ErrorResponse } from "../Utils/Error.js";
+import jwt from 'jsonwebtoken';
+
+export const refreshTokenServices = async (dataObject) => {
+    const { refreshToken } = dataObject;
+    let decode;
+    try {
+        decode = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET_KEY);
+    } catch (error) {
+        if (error.name === 'TokenExpiredError') {
+            throw new ErrorResponse(STATUS_CODES.UNAUTHORIZED, "Access token expired");
+        } else {
+            throw new ErrorResponse(STATUS_CODES.UNAUTHORIZED, "Invalid token");
+        }
+    }
+
+    const user = await officeAdminModel.findById(decode._id)
+
+    if (!user){
+        throw new ErrorResponse(STATUS_CODES.UNAUTHORIZED, "Access token expired");
+    }
+    
+    if (!(user.refreshToken == refreshToken)){
+        throw new ErrorResponse(STATUS_CODES.UNAUTHORIZED, "Access token expired");
+    }
+
+    const accessToken = user.generateAccessToken()
+    const refresh = user.generateRefreshToken()
+
+    const tokens = {accessToken, refreshToken : refresh}
+
+    return tokens
+}
+
 
 export const officeAdminCreateServices = async (dataObject) => {
     const { name, userName, email, password, phoneNumber } = dataObject;
@@ -107,8 +140,8 @@ export const officeAdminLoginServices = async (dataObject) => {
         console.log(user);
         if (!user) {
             throw new ErrorResponse(
-                STATUS_CODES.UNAUTHORIZED,
-                'Invalid email address or password'
+                STATUS_CODES.NOT_FOUND,
+                'Email is not registered'
             );
         }
 
@@ -116,7 +149,7 @@ export const officeAdminLoginServices = async (dataObject) => {
         const isPasswordValid = await user.isPasswordValid(password);
         if (!isPasswordValid) {
             throw new ErrorResponse(
-                STATUS_CODES.UNAUTHORIZED,
+                STATUS_CODES.NOT_FOUND,
                 'Invalid email address or password'
             );
         }
@@ -146,18 +179,17 @@ export const officeAdminLoginServices = async (dataObject) => {
 
 export const officeAdminLogOutServices = async (userId) => {
     try {
-        // Find the user by ID
-        const user = await officeAdminModel.findById(userId);
+        // Find the user by ID and remove the refresh token
+        const user = await officeAdminModel.findByIdAndUpdate(userId, {
+            $set: { refreshToken: null }
+        }, { new: true });
+
         if (!user) {
             throw new ErrorResponse(
                 STATUS_CODES.NOT_FOUND,
                 'User not found'
             );
         }
-
-        // Remove the refresh token
-        user.refreshToken = undefined;
-        await user.save();
 
         return true;
     } catch (err) {
@@ -176,6 +208,7 @@ export const officeAdminLogOutServices = async (userId) => {
         );
     }
 };
+
 
 export const officeAdminChangePasswordServices = async (dataObject) => {
     const { userId, oldPassword, newPassword } = dataObject;

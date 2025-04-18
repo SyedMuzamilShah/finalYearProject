@@ -1,61 +1,86 @@
 import 'package:dio/dio.dart';
-import 'package:fpdart/fpdart.dart';
+import 'package:flutter/foundation.dart';
 import 'package:my_desktop_app/core/apiException/api_exception.dart';
 import 'package:my_desktop_app/core/services/token_service.dart';
+import 'package:my_desktop_app/features/auth/data/models/response/token_response_model.dart';
 
 class ApiServices {
-
   // Singleton instance
   static final ApiServices _instance = ApiServices._();
   factory ApiServices() => _instance;
 
-
-  final Dio _dio =
-    Dio(BaseOptions(baseUrl: 'https://jsonplaceholder.typicode.com'));
+  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://localhost:3000/api/v1'));
+  // Dio(BaseOptions(baseUrl: 'https://jsonplaceholder.typicode.com'));
   final TokenService _tokenStorage = TokenService();
 
   // Private class constructor
-  ApiServices._(){
+  ApiServices._() {
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
-        String? token = _tokenStorage.token;
+        // Token varible intilized
+        String? token;
+        if (_tokenStorage.token != null) {
+          var tokenModel = TokenModel.fromJson(_tokenStorage.token);
+          token = tokenModel.accessToken;
+        }
+
+        options.contentType = 'application/json';
         options.receiveDataWhenStatusError = true;
         options.receiveTimeout = Duration(seconds: 15);
         options.connectTimeout = Duration(seconds: 15);
-
         if (token != null) {
           options.headers["Authorization"] = "Bearer $token";
-        }else {
-          print("Token Is Null print is in Api Sevices InterceptorsWrapper");
+          debugPrint("Token  is [api_services.dart]");
+          debugPrint(token);
+        } else {
+          debugPrint("Token is Null in [api_services.dart]");
         }
         return handler.next(options);
       },
     ));
   }
 
-
   // Post request function
-  Future<Either<ApiException, Response>> postRequest({
+  Future<Response<dynamic>> postRequest({
     required String endPoint,
     Map<String, dynamic>? body,
     Map<String, dynamic>? queryParameters,
+    bool isFormData = false,
   }) async {
-    return await _requestHandler(() =>
-        _dio.post(endPoint, data: body, queryParameters: queryParameters));
+    dynamic data = body;
+
+    if (isFormData && body != null) {
+      data = FormData.fromMap(body);
+    }
+
+    print(body);
+    print(endPoint);
+    return await _requestHandler(
+      () => _dio.post(
+        endPoint,
+        data: data,
+        queryParameters: queryParameters,
+        
+        options: Options(
+          contentType: isFormData ? 'multipart/form-data' : 'application/json',
+        ),
+
+      ),
+    );
   }
 
   // get request function
-  Future<Either<ApiException, Response>> getRequest({
+  Future<Response<dynamic>> getRequest({
     required String endPoint,
-    Map<String, dynamic>? body,
+    // Map<String, dynamic>? body,
     Map<String, dynamic>? queryParameters,
   }) async {
     return await _requestHandler(
-        () => _dio.get(endPoint, data: body, queryParameters: queryParameters));
+        () => _dio.get(endPoint, queryParameters: queryParameters));
   }
 
   // put request function
-  Future<Either<ApiException, Response>> putRequest({
+  Future<Response<dynamic>> putRequest({
     required String endPoint,
     Map<String, dynamic>? body,
     Map<String, dynamic>? queryParameters,
@@ -65,7 +90,7 @@ class ApiServices {
   }
 
   // delete request function
-  Future<Either<ApiException, Response>> deleteRequest({
+  Future<Response<dynamic>> deleteRequest({
     required String endPoint,
     Map<String, dynamic>? body,
     Map<String, dynamic>? queryParameters,
@@ -75,7 +100,7 @@ class ApiServices {
   }
 
   // patch request function
-  Future<Either<ApiException, Response>> patchRequest({
+  Future<Response<dynamic>> patchRequest({
     required String endPoint,
     Map<String, dynamic>? body,
     Map<String, dynamic>? queryParameters,
@@ -85,16 +110,20 @@ class ApiServices {
   }
 }
 
-
 // RequestHandler
-Future<Either<ApiException, Response>> _requestHandler(
+Future<Response<dynamic>> _requestHandler(
     Future<Response> Function() request) async {
   try {
     var response = await request();
-    return Right(response);
-  } on DioException catch (e){
-    return Left(ApiException.fromDioError(e));
+    if (kDebugMode) {
+      print(
+          "Api_services.dart: success response : Status Code : ${response.statusCode}");
+    }
+    // print("Api_services.dart: success response : ${response.data}");
+    return response;
+  } on DioException catch (e) {
+    throw ApiException.fromDioError(e);
   } catch (e) {
-    return Left(ApiException("Unexpected error: $e"));
+    throw ApiException("Unexpected error: $e");
   }
 }

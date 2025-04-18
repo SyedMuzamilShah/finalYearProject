@@ -1,0 +1,28 @@
+{
+  "folders": [
+    {
+      "path": "frontend/my_mobile_app"
+    },
+    {
+      "path": "."
+    },
+    {
+      "path": "frontend/my_desktop_app"
+    },
+    {
+      "path": "frontend/testing_app_two"
+    },
+    {
+      "path": "backend"
+    }
+  ],
+  "settings": {
+    "dart.analysisExcludedFolders": [
+      "backend",
+      "frontend/my_desktop_app/build",
+      "frontend/my_mobile_app/build",
+      "frontend/testing_app_two/build",
+      ".dart_tool"
+    ]
+  }
+}

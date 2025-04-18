@@ -1,37 +1,94 @@
-// utils/themes.dart
 import 'package:flutter/material.dart';
-import 'package:my_desktop_app/core/constant/app_colors.dart';
+import 'package:my_desktop_app/core/constants/app_colors.dart';
 
 class AppThemes {
   static final ThemeData lightTheme = ThemeData(
+    brightness: Brightness.light,
+    scaffoldBackgroundColor: AppColors.background,
     primaryColor: AppColors.primary,
     colorScheme: ColorScheme.light(
       primary: AppColors.primary,
+      primaryContainer: AppColors.primaryVariant,
       secondary: AppColors.secondary,
+      secondaryContainer: AppColors.secondaryVariant,
       surface: AppColors.surface,
-      background: AppColors.background,
       error: AppColors.error,
       onPrimary: AppColors.onPrimary,
       onSecondary: AppColors.onSecondary,
-      onSurface: AppColors.onSurface,
-      onBackground: AppColors.onBackground,
+      onSurface: AppColors.darkSurface,
+      surfaceContainerHighest: AppColors.onBackground,
       onError: AppColors.onError,
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: AppColors.surface,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: AppColors.lightGrey),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: AppColors.grey),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: AppColors.error, width: 1.5),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: AppColors.primary),
+      ),
+      hintStyle: TextStyle(color: AppColors.grey),
+      labelStyle: TextStyle(color: AppColors.darkGrey),
+    ),
+    textTheme: TextTheme(
+      bodyMedium: TextStyle(color: AppColors.onBackground),
+      bodyLarge: TextStyle(fontSize: 16, color: AppColors.onBackground),
     ),
   );
 
   static final ThemeData darkTheme = ThemeData(
+    brightness: Brightness.dark,
+    scaffoldBackgroundColor: AppColors.darkBackground,
     primaryColor: AppColors.primaryVariant,
     colorScheme: ColorScheme.dark(
       primary: AppColors.primaryVariant,
+      primaryContainer: AppColors.primary,
       secondary: AppColors.secondaryVariant,
-      surface: AppColors.darkGrey,
-      background: AppColors.black,
+      secondaryContainer: AppColors.secondary,
+      surface: AppColors.darkSurface,
       error: AppColors.error,
       onPrimary: AppColors.onPrimary,
       onSecondary: AppColors.onSecondary,
       onSurface: AppColors.onSurface,
-      onBackground: AppColors.onBackground,
+      surfaceContainerHighest: AppColors.onBackground,
       onError: AppColors.onError,
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: AppColors.darkSurface,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: AppColors.darkGrey),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: AppColors.error, width: 1.5),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: AppColors.grey),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: AppColors.secondary),
+      ),
+      hintStyle: TextStyle(color: AppColors.lightGrey),
+      labelStyle: TextStyle(color: AppColors.grey),
+    ),
+    textTheme: TextTheme(
+      bodyMedium: TextStyle(color: AppColors.white),
+      bodyLarge: TextStyle(fontSize: 16, color: AppColors.white),
     ),
   );
 }

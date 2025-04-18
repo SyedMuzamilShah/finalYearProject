@@ -11,11 +11,13 @@ const geocoder = NodeGeocoder(options);
 
 export const decodeAddress = async (address) => {
     try {
+        // console.log(address)
         const res = await geocoder.geocode(address);
-        console.log(res);
+        // console.log(res);
         return res;
     } catch (error) {
-        console.error("Geocoding Error:", error);
+        console.error("Geocoding Error:", error.message);
+        throw Error(error);
     }
 };
 

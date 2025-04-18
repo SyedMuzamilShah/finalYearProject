@@ -1,3 +1,9 @@
+# Ignore unused platforms
+android/
+ios/
+linux/
+macos/
+
 # Miscellaneous
 *.class
 *.log

@@ -3,22 +3,62 @@ import { officeAdminModel } from "../Models/Admin.Model.js";
 import { organizationModel } from "../Models/Organization.Model.js";
 import { ErrorResponse } from "../Utils/Error.js";
 
+export const organizationIsRegisterd = async (dataObject) => {
+    const { email, organizationNumber } = dataObject;
+    try {
+        const query = [{ email }]; // Always include email in the search criteria
+        console.log(organizationNumber)
+        if (organizationNumber) {
+            query.push({ uniqueName: organizationNumber }); // Add organizationNumber only if it exists
+        }
+
+        // Check if email or organizationNumber is already registered
+        const existingOrganization = await organizationModel.findOne({
+            $or: query
+        }).lean();
+
+        if (existingOrganization){
+            return true;
+        }else {
+            return false;
+        }
+        // if (existingOrganization) {
+        //     throw new ErrorResponse(
+        //         STATUS_CODES.CONFLICT,
+        //         'Organization already registered'
+        //     );
+        // }
+        
+    } catch (err) {
+        // console.log(err.message)
+        throw err
+    }
+}
+
+
 export const organizationCreateServices = async (dataObject) => {
+    console.log("Testing..... @gmail.com")
     // get user data from user request
     const { adminId, name, phoneNumber, address, website, email, organizationNumber } = dataObject
-
     try {
-        // Check if email is already registered
+
+        const query = [{ email }]; // Always include email in the search criteria
+
+        if (organizationNumber) {
+            query.push({ uniqueName: organizationNumber }); // Add organizationNumber only if it exists
+        }
+
+        // Check if email or organizationNumber is already registered
         const existingOrganization = await organizationModel.findOne({
-            $or: [{ email }, { uniqueName: organizationNumber }]
+            $or: query
         }).lean();
+
         if (existingOrganization) {
             throw new ErrorResponse(
                 STATUS_CODES.CONFLICT,
                 'Organization already registered'
             );
         }
-
         // Create a new user instance
         const organization = await organizationModel.create({
             name: name,
@@ -36,50 +76,72 @@ export const organizationCreateServices = async (dataObject) => {
         return _organization
 
     } catch (err) {
-        throw new ErrorResponse(500, err.message)
+        throw err
     }
 }
 
+export const deleteOrganization = async (dataObject) => {
 
-export const officeAdminLoginServices = async (email, password) => {
+    const { adminId, id, organizationId } = dataObject;
+
     try {
-        // Find the user by email
-        const user = await officeAdminModel.findOne({ email }).select('+password');
-        if (!user) {
+        // Construct query dynamically
+        let query = { createdBy: adminId };
+
+        if (organizationId) {
+            query.organizationId = organizationId;
+        } else if (id) {
+            query._id = id;
+        }
+
+        // Use constructed query for deletion
+        const organization = await organizationModel.findOneAndDelete(query);
+        
+        if (!organization) {
             throw new ErrorResponse(
-                STATUS_CODES.UNAUTHORIZED,
-                'Invalid email address or password'
+                STATUS_CODES.BAD_REQUEST,
+                'No matching organization found'
             );
         }
 
-        // Validate the password
-        const isPasswordValid = await user.isPasswordValid(password);
-        if (!isPasswordValid) {
+        return { success: true, organization };
+    } catch (error) {
+        console.error("Error deleting organization:", error.message);
+        throw error
+    }
+};
+
+
+export const getAllOrganization = async (dataObject) => {
+    console.log("dataObject")
+    console.log(dataObject)
+
+    const { adminId, id, organizationId } = dataObject;
+
+    try {
+        // Dynamically construct the query
+        let query = { createdBy: adminId }; // Always include adminId
+
+        if (organizationId) {
+            query.organizationId = organizationId;
+        } else if (id) {
+            query._id = id;
+        }
+        // Fetch organization based on constructed query
+        const organization = await organizationModel.find(query);
+        // console.log(organization)
+        return { organization }
+    } catch (error) {
+        if (error.name == 'CastError'){
             throw new ErrorResponse(
-                STATUS_CODES.UNAUTHORIZED,
-                'Invalid email address or password'
+                STATUS_CODES.BAD_REQUEST,
+                error.message
             );
         }
-
-        // Generate tokens
-        const access = user.generateAccessToken();
-        const refresh = user.generateRefreshToken();
-
-        // Save the refresh token in the database (hashed)
-        user.refreshToken = await bcrypt.hash(refresh, 10);
-        await user.save();
-
-        // Prepare the response
-        const userResponse = user.toObject();
-        delete userResponse.password;
-        delete userResponse.__v;
-        delete userResponse.refreshToken;
-
-        return { userResponse, tokens: { accessToken: access, refreshToken: refresh } };
-    } catch (err) {
-        // Log the error for debugging
-        console.error('Login service error:', err);
-        throw err;
+        throw new ErrorResponse(
+            STATUS_CODES.BAD_REQUEST,
+            `"Error fetching organization:", ${error.message}`
+        );
     }
 };
 

@@ -19,3 +19,9 @@ export const validateEmployeeChangePasswordRoutes = [
 export const validateEmployeeForgetPasswordRoutes = [
     body('email').isEmail().withMessage('Invalid email'),
 ];
+
+export const validateEmployeeStatusChangeRoutes = [
+    body('status').notEmpty().withMessage('Status is required'),
+    body('employeeId').notEmpty().withMessage('Employee ID is required')
+    .isMongoId().withMessage('Invalid Employee ID format'),
+];

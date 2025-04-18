@@ -1,0 +1,10 @@
+analyzer:
+  exclude:
+    - "backend/**"
+    - "frontend/desktop_app/android/**"
+    - "frontend/desktop_app/**"
+    - "frontend/mobile_app/**"
+    - "**/.dart_tool/**"
+    - "**/build/**"
+    - "**/node_modules/**"
+    - "lib/**"

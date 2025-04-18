@@ -1,6 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv'
 const app = express();
+import path from 'path';
 
 // middleware to activate the app/server public folder to access them in our all app
 app.use(express.static('./public'))
@@ -11,6 +12,9 @@ app.set('view engine', 'ejs');
 // Help to get and read json data
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }));
+// app.use('/uploads', express.static(path.join(__dirname, 'public/temp')));
+// app.use("/uploads", express.static("public/temp"));
+app.use("/", express.static("public"));
 
 
 // Configure `.env` to access any where
@@ -28,20 +32,22 @@ const imageUrl = 'https://images.unsplash.com/photo-1567538482802-b29e69d2b0b4?f
 
 
 // Routes import
-import { superAdminRoutes } from './src/Routes/SuperAdmin.Routes.js';
+import { adminRoutes } from './src/Routes/Admin.Routes.js';
 import { employeeRoutes } from './src/Routes/Employee.Routes.js';
-import { officerRoutes } from './src/Routes/OfficeAdmin.Routes.js';
-import { STATUS_CODES } from './constant.js';
-import { ejsRoutes } from './src/Routes/Ejs.Routes.js';
+import { combineRoutes } from './src/Routes/Combine.Routes.js';
 
 
-import { coreRoute } from './src/Routes/Core.Routes.js';
+
+app.use((req, res, next) => {
+    console.log(`🔍 Request Method: ${req.method} - Path: ${req.path}`);
+    next();
+});
+
 
 // Routes middleware define redirect to specified routef
-app.use('/api/v1/superadmin', superAdminRoutes)
 app.use('/api/v1/employee', employeeRoutes)
-app.use('/api/v1/admin', officerRoutes)
-app.use('/api/v1/unique', coreRoute)
+app.use('/api/v1/admin', adminRoutes)
+app.use('/api/v1/combine', combineRoutes)
 
 app.use('/api/v1/ejs', ejsRoutes)
 
@@ -79,14 +85,18 @@ const faceToke = '4a13277ed09c210d0089b581f31c1747'
 //     // var response = await faceRegistration('31398285a406123fc16ccb69a997c40e', unknow)
 // })
 app.get('/testing', async (req, res) =>{
+    const employee = await readEmployeeServices()
     // const create = await testingModel.create({name: 'muzamil'})
     // res.send(create)
-    await sendVerificationEmail('syed.m.shah7878@gmail.com', 'tokencan be passing')
-    res.send("Verification....")
+    // await sendVerificationEmail('syed.m.shah7878@gmail.com', 'tokencan be passing')
+    res.send(employee)
 })
 
-app.get('/', async (req, res) =>{
-    res.send('index')
+app.get('/:address', async (req, res) =>{
+    const address = req.params.address
+
+    const respones = await decodeAddress(address)
+    res.send(respones)
 })
 app.get('/verify/:id', async (req, res) =>{
     console.log(req.params.id)
@@ -108,6 +118,10 @@ import { ErrorResponse } from './src/Utils/Error.js';
 import { deleteFace, faceRegistration, faceVerification } from './src/Utils/FaceBioHandler.js';
 import { testingModel } from './src/Models/Testing.Model.js';
 import { sendVerificationEmail } from './src/Utils/TokenSender.js';
+import { ejsRoutes } from './src/Routes/Ejs.Routes.js';
+import { STATUS_CODES } from './constant.js';
+import { readEmployeeServices } from './src/Services/Employee/Employee.Services.js';
+import { decodeAddress } from './src/Utils/AddressConverter.js';
 // import { faceRegistration, faceVerification } from './src/utils/faceVerification.js';
 // middleware to send the error message from server to backend
 app.use((err, _, res, next) => {
@@ -117,8 +131,8 @@ app.use((err, _, res, next) => {
     }
     console.error(`Error Log Last Middleware:\n\t\t ${err.message}`)
 
-    return res.status(STATUS_CODES.SERVER_ERROR)
-        .json({ statusCode: STATUS_CODES.SERVER_ERROR, message: 'some thing went wrong' })
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR)
+        .json({ statusCode: STATUS_CODES.INTERNAL_SERVER_ERROR, message: 'some thing went wrong' })
 })
  
 

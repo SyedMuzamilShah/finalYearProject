@@ -2,6 +2,14 @@ import mongoose, { Schema, model } from "mongoose";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { nanoid } from "nanoid";
+
+const EmployeeStatus = {
+  VERIFIED: "VERIFIED",
+  PENDING: "PENDING",
+  REJECTED: "REJECTED",
+  BLOCKED: "BLOCKED",
+};
+
 const employeeSchema = new Schema(
   {
     employeeId: {
@@ -9,12 +17,20 @@ const employeeSchema = new Schema(
       default: () => `EMP-${nanoid(6).toUpperCase()}`, // e.g., EMP-7S4X9Z
       unique: true, // Enforce uniqueness
     },
+    userName: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+    },
     name: {
       type: String,
     },
     email: {
       type: String,
-      unique : true
+      required: true,
+      unique: true,
+      lowercase: true,
     },
     isEmailVerified: { type: Boolean, default: false },
     imageUrl : {
@@ -24,11 +40,15 @@ const employeeSchema = new Schema(
 
     password: {
       type: String,
+      select : false
     },
 
+    // biometricToken: {
+    //     type: mongoose.Types.ObjectId,
+    //     ref: "biometrictoken"
+    // },
     biometricToken: {
-        type: mongoose.Types.ObjectId,
-        ref: "biometrictoken"
+        type: String
     },
     phoneNumber: {
       type: String,
@@ -36,17 +56,20 @@ const employeeSchema = new Schema(
 
     role: {
         type: String,
+        lowercase: true,
     },
 
     organizationId: {
       type: String,
-      ref: "organization.organizationId"
+      ref: "organization.organizationId",
+      required: true,
     },
 
     status: {
       type: String,
-      enum: ["ACTIVE", "PENDING", "VERIFIED", "REJECTED", "RETRY"],
-      default: "ACTIVE"
+      enum: Object.values(EmployeeStatus), // Enforce enum values
+      default: EmployeeStatus.PENDING,
+      // lowercase: true,
     },
   },
 

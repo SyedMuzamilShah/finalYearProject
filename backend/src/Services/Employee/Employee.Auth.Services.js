@@ -1,0 +1,247 @@
+import { STATUS_CODES } from "../../../constant.js";
+import { employeeModel } from "../../Models/Employee.Model.js";
+import { organizationModel } from "../../Models/Organization.Model.js";
+import { ErrorResponse } from "../../Utils/Error.js";
+import jwt from "jsonwebtoken"
+
+export const employeeCreateServices = {
+    findExistingUser: async ({ userName, email }) => {
+        return await employeeModel.findOne({ $or: [{ email }, { userName }] }).lean();
+    },
+    finaOrganization: async ({ organizationId, id }) => {
+        console.log(organizationId)
+        console.log(id)
+        return await organizationModel.findOne({ $or: [{organizationId}, {_id : id}] })
+    },
+    createEmployee: async (dataObject) => {
+        const { adminId, userName, email, name, password, role, phoneNumber, organizationId, biometricToken, imageUrl } = dataObject;
+
+        try {
+            // Create new employee
+            const employee = await employeeModel.create({
+                userName, imageUrl, name, email, password, biometricToken, phoneNumber, role, organizationId
+            });
+
+            // Generate tokens
+            const access = employee.generateAccessToken();
+            const refresh = employee.generateRefreshToken();
+
+            // Save refresh token
+            employee.refreshToken = refresh;
+            await employee.save();
+
+
+            // Prepare response
+            const userResponse = employee.toObject();
+            delete userResponse.password;
+            delete userResponse.__v;
+            delete userResponse.refreshToken;
+            return { userResponse, tokens: { accessToken: access, refreshToken: refresh } };
+
+        } catch (err) {
+            console.error("Error in employee creation service:", err.message);
+            throw err;
+        }
+    }
+};
+
+
+
+export const employeeLoginServices = {
+    login: async ({ email, userName, password }) => {
+        try {
+            // Find the user by email
+            const user = await employeeModel.findOne({
+                $or : [{email}, {userName}]
+            }).select('+password');
+
+            console.log(user);
+            if (!user) {
+                throw new ErrorResponse(
+                    STATUS_CODES.NOT_FOUND,
+                    'Employee is not registered withthat crediational'
+                );
+            }
+
+            // Validate the password
+            const isPasswordValid = await user.isPasswordValid(password);
+            if (!isPasswordValid) {
+                throw new ErrorResponse(
+                    STATUS_CODES.NOT_FOUND,
+                    'Invalid creadtional'
+                );
+            }
+
+            // Generate tokens
+            const access = await user.generateAccessToken();
+            const refresh = await user.generateRefreshToken();
+
+            // Save the refresh token in the database (hashed)
+            user.refreshToken = refresh
+            await user.save();
+
+            // Prepare the response
+            const userResponse = user.toObject();
+            delete userResponse.password;
+            delete userResponse.__v;
+            delete userResponse.refreshToken;
+
+            return { userResponse, tokens: { accessToken: access, refreshToken: refresh } };
+        } catch (err) {
+            // Log the error for debugging
+            // console.error('Login service error:', err);
+            throw err;
+        }
+    }
+}
+
+
+export const refreshTokenServices = async (dataObject) => {
+    const { refreshToken } = dataObject;
+    let decode;
+    try {
+        decode = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET_KEY);
+    } catch (error) {
+        if (error.name === 'TokenExpiredError') {
+            throw new ErrorResponse(STATUS_CODES.UNAUTHORIZED, "Access token expired");
+        } else {
+            throw new ErrorResponse(STATUS_CODES.UNAUTHORIZED, "Invalid token");
+        }
+    }
+
+    const user = await officeAdminModel.findById(decode._id)
+
+    if (!user) {
+        throw new ErrorResponse(STATUS_CODES.UNAUTHORIZED, "Access token expired");
+    }
+
+    if (!(user.refreshToken == refreshToken)) {
+        throw new ErrorResponse(STATUS_CODES.UNAUTHORIZED, "Access token expired");
+    }
+
+    const accessToken = user.generateAccessToken()
+    const refresh = user.generateRefreshToken()
+
+    const tokens = { accessToken, refreshToken: refresh }
+
+    return tokens
+}
+
+
+export const getEmployeeProfileService = async (userId) => {
+    try {
+        // Find the user by ID
+        const user = await employeeModel.findById(userId);
+        if (!user) {
+            throw new ErrorResponse(
+                STATUS_CODES.NOT_FOUND,
+                'User not found'
+            );
+        }
+
+        // Prepare the response
+        const userResponse = user.toObject();
+        delete userResponse.password;
+        delete userResponse.__v;
+        delete userResponse.refreshToken;
+
+        return userResponse;
+    } catch (err) {
+        // Log the error for debugging
+        console.error('Get profile service error:', err);
+
+        // Re-throw custom errors
+        if (err instanceof ErrorResponse) {
+            throw err;
+        }
+
+        // Throw a generic error for unexpected issues
+        throw new ErrorResponse(
+            STATUS_CODES.INTERNAL_SERVER_ERROR,
+            'Profile retrieval failed due to an unexpected error'
+        );
+    }
+};
+
+
+export const employeeLogOutServices = async (userId) => {
+    try {
+        // Find the user by ID and remove the refresh token
+        const user = await employeeModel.findByIdAndUpdate(userId, {
+            $set: { refreshToken: null }
+        }, { new: true });
+
+        if (!user) {
+            throw new ErrorResponse(
+                STATUS_CODES.NOT_FOUND,
+                'User not found'
+            );
+        }
+
+        return true;
+    } catch (err) {
+        // Log the error for debugging
+        console.error('Logout service error:', err);
+
+        // Re-throw custom errors
+        if (err instanceof ErrorResponse) {
+            throw err;
+        }
+
+        // Throw a generic error for unexpected issues
+        throw new ErrorResponse(
+            STATUS_CODES.INTERNAL_SERVER_ERROR,
+            'Logout failed due to an unexpected error'
+        );
+    }
+};
+
+
+export const employeeChangePasswordServices = async (dataObject) => {
+    const { userId, oldPassword, newPassword } = dataObject;
+    try {
+        // Find the user by ID
+        const user = await employeeModel.findById(userId).select('+password');
+        if (!user) {
+            throw new ErrorResponse(
+                STATUS_CODES.NOT_FOUND,
+                'User not found'
+            );
+        }
+
+        // Validate the old password
+        const isPasswordValid = await user.isPasswordValid(oldPassword);
+        if (!isPasswordValid) {
+            throw new ErrorResponse(
+                STATUS_CODES.BAD_REQUEST,
+                'Old password is not valid'
+            );
+        }
+
+        // Update the password
+        user.password = newPassword;
+        await user.save(); // This will trigger the pre-save hook to hash the password
+
+        // Prepare the response
+        const userResponse = user.toObject();
+        delete userResponse.password;
+        delete userResponse.__v;
+        delete userResponse.refreshToken;
+
+        return userResponse;
+    } catch (err) {
+        // Log the error for debugging
+        console.error('Change password service error:', err);
+
+        // Re-throw custom errors
+        if (err instanceof ErrorResponse) {
+            throw err;
+        }
+
+        // Throw a generic error for unexpected issues
+        throw new ErrorResponse(
+            STATUS_CODES.INTERNAL_SERVER_ERROR,
+            'Password change failed due to an unexpected error'
+        );
+    }
+};

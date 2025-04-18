@@ -1,11 +1,19 @@
 import mongoose from "mongoose";
 
+const TaskStatus = {
+  CREATED: "CREATED",
+  ASSIGNED: "ASSIGNED",
+  COMPLETED: "COMPLETED",
+  VERIFIED: "VERIFIED",
+};
+
+
 const taskSchema = new mongoose.Schema(
   {
-    employeeId: {
-      type: mongoose.Types.ObjectId,
-      ref: "employee",
-    },
+    // employeeId: {
+    //   type: mongoose.Types.ObjectId,
+    //   ref: "employee",
+    // },
     organizationId: {
       type: mongoose.Types.ObjectId,
       ref: "organization",
@@ -29,14 +37,20 @@ const taskSchema = new mongoose.Schema(
       type: Date, // Corrected from DataTime to Date
       required: true, // Ensure dueDate is provided
     },
-    address: {
-      type: mongoose.Types.ObjectId,
-      ref: "address",
+    // address: {
+    //   type: mongoose.Types.ObjectId,
+    //   ref: "address",
+    // },
+    location: {
+      type: { type: String, default: "Point" },
+      coordinates: [Number]  // [longitude, latitude]
     },
+
     status: {
       type: String,
-      enum: ["CREATED", "ASSIGNED", "COMPLETED", "FAILED", "IN PROGRESS", "REJECT", "VERIFIED"], // Corrected FAILED spelling
-      default: "CREATED", // Default status is PENDING
+      enum: Object.values(TaskStatus),
+      default: TaskStatus.CREATED,
+      // lowercase: true,
     },
   },
   {
