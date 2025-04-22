@@ -42,8 +42,9 @@ class OrganizationRepoImpl extends OrganizationRepo {
     final response = await _dataSources.get(
       prams: prams?.toJson()
     );
+
     return response.fold((err) => Left(err), (succ) {
-      List data = succ['data']['organization'];
+      List data = succ['data']['organizations'];
       
       List<OrganizationEntities> organization =
           data.map((e) => OrganizationResponseModel.fromJson(e)).toList();

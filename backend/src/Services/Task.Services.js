@@ -5,11 +5,11 @@ import { taskModel } from "../Models/Task.Model.js";
 import { taskAssignmentModel } from "../Models/TaskAssignment.Model.js";
 import { ErrorResponse } from "../Utils/Error.js";
 import { faceVerification } from "../Utils/FaceBioHandler.js";
-import {getDistanceInMeters } from "../Utils/Distance_Calculator.js"
+import { getDistanceInMeters } from "../Utils/Distance_Calculator.js"
 
 const handleDatabaseError = (error) => {
     console.error("Database error:", error.message);
-    throw new ErrorResponse(500, "An unexpected database error occurred");
+    throw new ErrorResponse(500, error.message ?? "An unexpected database error occurred");
 };
 
 export const taskCreateServices = async (dataObject) => {
@@ -23,10 +23,14 @@ export const taskCreateServices = async (dataObject) => {
             dueDate,
         } = dataObject;
 
+
+        const query = isValidObjectId(organizationId)
+            ? { $or: [{ _id: organizationId }, { organizationId }] }
+            : { organizationId };
+
         // 🔍 Check if organization exists
-        const org = await organizationModel.findOne({
-            $or: [{ _id: organizationId }, { organizationId }],
-        });
+        const org = await organizationModel.findOne(query);
+        
         if (!org) throw new ErrorResponse(400, 'Organization not found');
 
         // ✅ Check for duplicate task
@@ -71,7 +75,13 @@ export const taskUpdateService = async (dataObject) => {
             throw new ErrorResponse(STATUS_CODES.NOT_FOUND, "Task not found");
         }
 
-        Object.assign(task, dataObject);
+        const allowedFields = ['name', 'description', 'status', 'dueDate'];
+
+        for (const key of allowedFields) {
+            if (dataObject[key] !== undefined) {
+                task[key] = dataObject[key];
+            }
+        }
         await task.save();
 
         return { task };
@@ -102,7 +112,7 @@ export const taskDeleteService = async (dataObject) => {
 
         // if task is deleted then delete all the task from task assignment model
         // if the task is deleted then it will be deleted from that corresponding assignment employees
-        await taskAssignmentModel.deleteMany({taskId: taskId});
+        await taskAssignmentModel.deleteMany({ taskId: taskId });
 
         if (!response) throw new ErrorResponse(STATUS_CODES.NOT_FOUND, "Task not found");
         return true;
@@ -251,6 +261,7 @@ export const getTasksWithAssignments = async (dataObject) => {
 
     try {
         let query = {};
+        if (adminId) query.adminId = adminId
         if (organizationId) query.organizationId = organizationId;
         if (status && status.toUpperCase() !== "ALL") {
             query.status = status.toUpperCase();
@@ -261,7 +272,7 @@ export const getTasksWithAssignments = async (dataObject) => {
                 { description: { $regex: search, $options: 'i' } },
             ];
         }
-
+        console.log(query)
         const tasks = await taskModel.find(query).lean();
         const taskIds = tasks.map((task) => task._id);
 

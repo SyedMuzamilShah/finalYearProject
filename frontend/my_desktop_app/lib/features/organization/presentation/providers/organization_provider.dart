@@ -181,7 +181,6 @@ class OrganizationNotifier extends StateNotifier<OrganizationState> {
       print("I am resquesting to get data from remote database");
       // get the organization data from database
       final response = await _useCase.get(prams: model);
-
       return response.fold(
         // if error come then falsr
         (err) => false,

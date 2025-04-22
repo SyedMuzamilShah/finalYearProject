@@ -6,11 +6,13 @@ import 'package:sidebarx/sidebarx.dart';
 
 
 final isOrganizationProvider = FutureProvider.autoDispose<bool>((ref) async {
+
   final org = ref.read(organizationProvider).selectedOrganization;
   if (org != null) {
     return true;
   }
-  return ref.read(organizationProvider.notifier).isOrganizationSaved();
+  final response = await ref.read(organizationProvider.notifier).isOrganizationSaved();
+  return response;
 });
 
 // Provider help to change the sidebar index through which we change the main content widget

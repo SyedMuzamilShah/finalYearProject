@@ -22,14 +22,19 @@ const organizationSchema = new Schema(
       type: String,
     },
 
-    address: {
-      type: mongoose.Types.ObjectId,
-      ref: "address",
+    // address: {
+    //   type: mongoose.Types.ObjectId,
+    //   ref: "address",
+    // },
+    location: {
+      type: { type: String, default: "Point" },
+      coordinates: [Number]  // [longitude, latitude]
     },
-
+    
     createdBy: {
       type: mongoose.Types.ObjectId,
-      ref: "admin|officer",
+      ref: "admin",
+      required: true,
     },
   },
 

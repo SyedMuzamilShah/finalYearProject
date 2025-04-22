@@ -35,20 +35,26 @@ const officerSchema = new Schema(
     isEmailVerified: { type: Boolean, default: false },
     emailVerificationToken: { type: String },
     emailVerificationExpires: { type: Date },
+    emailVerificationToken: {type: String},
     role: {
       type: String,
     },
     refreshToken: {
       type: String,
     },
-    status: {
-      type: String,
-      enum: ["ACTIVE", "PENDING", "VERIFIED", "REJECTED", "RETRY"],
-    },
   },
 
   {
     timestamps: true,
+    toJSON: {
+      virtuals: true,
+      transform: function(doc, ret) {
+        delete ret.password;
+        delete ret.__v;
+        delete ret.refreshToken;
+        return ret;
+      }
+    },
   }
 );
 
@@ -92,4 +98,4 @@ officerSchema.methods.generateRefreshToken = function () {
 };
 
 // Export the officer model
-export const officeAdminModel = model("officer", officerSchema);
+export const adminModel = model("admin", officerSchema);

@@ -58,7 +58,7 @@ class _OrganizationViewState extends ConsumerState<OrganizationView> {
   Widget _buildBody(OrganizationState state, BuildContext context,
       OrganizationNotifier notifier) {
     final loadOrganization = ref.watch(organizationsLoadProvider);
-
+    
     return loadOrganization.when(
         data: (data) { 
           if (data.isEmpty) {

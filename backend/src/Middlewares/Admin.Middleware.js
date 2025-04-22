@@ -1,10 +1,10 @@
 import { controllerHandler } from '../Utils/ControllerHandler.js';
 import { ErrorResponse } from '../Utils/Error.js';
 import { STATUS_CODES } from '../../constant.js';
-import { officeAdminModel } from '../Models/Admin.Model.js';
+import { adminModel } from '../Models/Admin.Model.js';
 import jwt from 'jsonwebtoken';
 
-export const officerJwtDecode = controllerHandler(async (req, _, next) => {
+export const adminJwtDecode = controllerHandler(async (req, _, next) => {
     try {
         // Get access token from web cookies or frontend header
         const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
@@ -28,7 +28,7 @@ export const officerJwtDecode = controllerHandler(async (req, _, next) => {
         }
 
         // Find the user in the database
-        const user = await officeAdminModel.findById(decode?._id);
+        const user = await adminModel.findById(decode?._id);
         
         // If user not found, throw an error
         if (!user) {

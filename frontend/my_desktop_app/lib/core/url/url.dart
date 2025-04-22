@@ -16,9 +16,11 @@ class ServerUrl {
   static const String userGetProfileRoute = '';
  
   
-  static const String employeeCreateRoute = '$baseUrl/combine/add/employee';
-  static const String employeeGetRoute = '$baseUrl/combine/get/employee';
-  static const String employeeStatusChangeRoute = '$baseUrl/combine/employee/status-change';
+  static const String employeeCreateRoute = '$baseUrl/admin/employee/create';
+  static const String employeeGetRoute = '$baseUrl/admin/employee/get';
+  static const String employeeStatusChangeRoute = '$baseUrl/admin/employee/update-data';
+  static const String employeePictureAllowForProcessing = '$baseUrl/admin/employee/allow-picture';
+
   static const String employeeLoginRoute = '$baseUrl/admin/auth/login';
   static const String employeeLogoutRoute = '$baseUrl/admin/auth/logout';
   static const String employeeRefreshToken = '$baseUrl/admin/auth/token';
@@ -31,12 +33,12 @@ class ServerUrl {
   static const String userUpdateOrganization = '$baseUrl/admin/organization/get';
   static const String userDeleteOrganization = '$baseUrl/admin/organization/delete';
 
-  static const String taskRead = '$baseUrl/admin/organization/task/read';
-  static const String taskAssign = '$baseUrl/admin/organization/task/assign';
-  static const String taskStatusChange = '$baseUrl/admin/organization/task/status-change';
-  static const String taskVerified = '$baseUrl/admin/organization/task/verified';
-  static const String taskDeassign = '$baseUrl/admin/organization/task/deassign';
-  static const String taskCreate = '$baseUrl/admin/organization/task/create';
-  static const String taskUpdate = '$baseUrl/admin/organization/get';
-  static const String taskDelete = '$baseUrl/admin/organization/delete';
+  static const String taskRead = '$baseUrl/admin/task/get';
+  static const String taskAssign = '$baseUrl/admin/task/assign';
+  static const String taskStatusChange = '$baseUrl/admin/task/status-change';
+  static const String taskVerified = '$baseUrl/admin/task/verified';
+  static const String taskDeassign = '$baseUrl/admin/task/deassign';
+  static const String taskCreate = '$baseUrl/admin/task/create';
+  static const String taskUpdate = '$baseUrl/admin/task/update';
+  static const String taskDelete = '$baseUrl/admin/task/delete';
 }

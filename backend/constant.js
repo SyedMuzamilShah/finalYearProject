@@ -13,6 +13,7 @@ export const STATUS_CODES = {
     UNAUTHORIZED: 401,
     CONFLICT: 409,
 
+    UNPROCESSABLE_ENTITY : 422, // Validation error
     FORBIDDEN: 403, // not allowed
     NOT_FOUND: 404, 
     INTERNAL_SERVER_ERROR: 500,

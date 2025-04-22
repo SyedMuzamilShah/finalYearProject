@@ -1,0 +1,259 @@
+{
+    "authentication": {
+      "adminRegister": {
+        "request": {
+          "method": "POST",
+          "url": "/admin/auth/register",
+          "body": {
+            "userName": "string (required, unique, min:3)",
+            "name": "string (optional)",
+            "email": "string (required, unique)",
+            "password": "string (required, min:6)",
+            "phoneNumber": "string (optional)",
+            "role": "string (required, enum:['Servent','Employee','Manager'])"
+          },
+          "headers": {
+            "Content-Type": "application/json"
+          }
+        },
+        "response": {
+          "statusCode": 201,
+          "message": "User created successfully",
+          "data": {
+            "user": {
+              "_id": "ObjectId",
+              "userName": "string",
+              "email": "string",
+              "phoneNumber": "string",
+              "role": "string",
+              "status": "string",
+              "createdAt": "ISO Date",
+              "updatedAt": "ISO Date"
+            },
+            "tokens": {
+              "accessToken": "JWT",
+              "refreshToken": "JWT"
+            }
+          }
+        }
+      },
+      "adminLogin": {
+        "request": {
+          "method": "POST",
+          "url": "/admin/auth/login",
+          "body": {
+            "email": "string (required)",
+            "password": "string (required)"
+          }
+        },
+        "response": {
+          "statusCode": 200,
+          "message": "Login successful",
+          "data": {
+            "user": {
+              "_id": "ObjectId",
+              "userName": "string",
+              "email": "string",
+              "role": "string"
+            },
+            "tokens": {
+              "accessToken": "JWT",
+              "refreshToken": "JWT"
+            }
+          }
+        }
+      }
+    },
+    "employee": {
+      "registerEmployee": {
+        "request": {
+          "method": "POST",
+          "url": "/employees",
+          "body": {
+            "userName": "string (required, unique)",
+            "name": "string (optional)",
+            "email": "string (required, unique)",
+            "password": "string (required, min:6)",
+            "phoneNumber": "string (optional)",
+            "imageUrl": "string (optional, URL)",
+            "role": "string (required)",
+            "organizationId": "string (required)"
+          }
+        },
+        "response": {
+          "statusCode": 201,
+          "message": "Employee created successfully",
+          "data": {
+            "employee": {
+              "employeeId": "string (EMP-XXXXXX)",
+              "userName": "string",
+              "name": "string",
+              "email": "string",
+              "imageUrl": "string",
+              "phoneNumber": "string",
+              "role": "string",
+              "organizationId": "string",
+              "status": "string",
+              "createdAt": "ISO Date",
+              "updatedAt": "ISO Date"
+            }
+          }
+        }
+      },
+      "getEmployee": {
+        "request": {
+          "method": "GET",
+          "url": "/employees/:employeeId"
+        },
+        "response": {
+          "statusCode": 200,
+          "message": "Employee retrieved successfully",
+          "data": {
+            "employee": {
+              "employeeId": "string",
+              "userName": "string",
+              "name": "string",
+              "email": "string",
+              "imageUrl": "string",
+              "phoneNumber": "string",
+              "role": "string",
+              "organizationId": "string",
+              "status": "string",
+              "createdAt": "ISO Date",
+              "updatedAt": "ISO Date"
+            }
+          }
+        }
+      }
+    },
+    "organization": {
+      "createOrganization": {
+        "request": {
+          "method": "POST",
+          "url": "/organizations",
+          "body": {
+            "name": "string (required)",
+            "email": "string (required)",
+            "phoneNumber": "string (required)",
+            "website": "string (optional)",
+            "address": "ObjectId (optional)"
+          }
+        },
+        "response": {
+          "statusCode": 201,
+          "message": "Organization created successfully",
+          "data": {
+            "organization": {
+              "organizationId": "string (ORG-XXXXXX)",
+              "name": "string",
+              "email": "string",
+              "phoneNumber": "string",
+              "website": "string",
+              "address": "ObjectId",
+              "createdBy": "ObjectId",
+              "createdAt": "ISO Date",
+              "updatedAt": "ISO Date"
+            }
+          }
+        }
+      }
+    },
+    "tasks": {
+      "createTask": {
+        "request": {
+          "method": "POST",
+          "url": "/tasks",
+          "body": {
+            "organizationId": "ObjectId (required)",
+            "adminId": "ObjectId (required)",
+            "title": "string (required)",
+            "description": "string (optional)",
+            "dueDate": "ISO Date (required)",
+            "location": {
+              "type": "Point",
+              "coordinates": "[longitude, latitude]"
+            }
+          }
+        },
+        "response": {
+          "statusCode": 201,
+          "message": "Task created successfully",
+          "data": {
+            "task": {
+              "_id": "ObjectId",
+              "organizationId": "ObjectId",
+              "adminId": "ObjectId",
+              "title": "string",
+              "description": "string",
+              "dueDate": "ISO Date",
+              "location": {
+                "type": "Point",
+                "coordinates": "[number, number]"
+              },
+              "status": "string",
+              "createdAt": "ISO Date",
+              "updatedAt": "ISO Date"
+            }
+          }
+        }
+      },
+      "assignTask": {
+        "request": {
+          "method": "POST",
+          "url": "/tasks/assign",
+          "body": {
+            "taskId": "ObjectId (required)",
+            "employeeId": "ObjectId (required)",
+            "assignedBy": "ObjectId (required)",
+            "deadline": "ISO Date (optional)"
+          }
+        },
+        "response": {
+          "statusCode": 201,
+          "message": "Task assigned successfully",
+          "data": {
+            "assignment": {
+              "_id": "ObjectId",
+              "taskId": "ObjectId",
+              "employeeId": "ObjectId",
+              "assignedBy": "ObjectId",
+              "status": "string",
+              "deadline": "ISO Date",
+              "createdAt": "ISO Date",
+              "updatedAt": "ISO Date"
+            }
+          }
+        }
+      }
+    },
+    "location": {
+      "recordLocation": {
+        "request": {
+          "method": "POST",
+          "url": "/locations",
+          "body": {
+            "employeeId": "ObjectId (required)",
+            "address": "ObjectId (optional)",
+            "bioMetricType": "string (enum:['FACED','FINGERPRINT'])",
+            "task": "ObjectId (optional)"
+          }
+        },
+        "response": {
+          "statusCode": 201,
+          "message": "Location recorded successfully",
+          "data": {
+            "location": {
+              "_id": "ObjectId",
+              "employeeId": "ObjectId",
+              "address": "ObjectId",
+              "bioMetricType": "string",
+              "status": "string",
+              "task": "ObjectId",
+              "createdAt": "ISO Date",
+              "updatedAt": "ISO Date"
+            }
+          }
+        }
+      }
+    }
+  }

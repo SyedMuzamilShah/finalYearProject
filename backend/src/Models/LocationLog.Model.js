@@ -25,7 +25,7 @@ const locationSchema = new Schema(
 
     task: {
       type: mongoose.Types.ObjectId,
-      ref: "task",
+      ref: "taskAssignment",
     },
   },
 

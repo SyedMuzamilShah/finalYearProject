@@ -21,9 +21,9 @@ class TaskCreateParams {
   }
 }
 class LocationModel {
-  final double latitude;
-  final double longitude;
-  final String address;
+  final num latitude;
+  final num longitude;
+  final String? address;
 
   LocationModel({required this.latitude, required this.longitude, this.address = 'Address'});
 
@@ -38,10 +38,11 @@ class LocationModel {
     return LocationModel(
       longitude: coords[0],
       latitude: coords[1],
+      address: json['address']
     );
   }
 
-  LatLng toLatLng() => LatLng(latitude, longitude);
+  LatLng toLatLng() => LatLng(latitude.toDouble(), longitude.toDouble());
 }
 
 

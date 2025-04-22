@@ -1,28 +1,27 @@
 import { Router } from "express";
-import { faceRegisterController } from "../Controllers/Combine/Face.Controller.js";
-import { combineEmployeeAddController, combineEmployeeGetController, combineEmployeeStatusChange } from "../Controllers/Combine/Employee.Controller.js";
-import { validateEmployeeGetRoutes, validateEmployeeRoutes } from "../Utils/Validators/Combine/Employee.Validation.js";
-import { upload } from "../Middlewares/Multer.Middleware.js";
-import { officerJwtDecode } from "../Middlewares/Officer.Middleware.js";
-import { validateEmployeeStatusChangeRoutes } from "../Utils/Validators/Employee.Validation.js";
+// import { faceRegisterController } from "../Controllers/Combine/Face.Controller.js";
+// import {  combineEmployeeGetController, combineEmployeeStatusChange } from "../Controllers/Combine/Employee.Controller.js";
+// import { upload } from "../Middlewares/Multer.Middleware.js";
+// import { validateEmployeeGetRoutes, validateEmployeeRegisterRoutes, validateEmployeeStatusChangeRoutes } from "../Utils/Validators/Employee.Validation.js";
+// import { adminJwtDecode } from "../Middlewares/Admin.Middleware.js";
 const combineRoutes = Router();
 
 export { combineRoutes };
 
 
-combineRoutes.route('/add/employee').post(
-    upload.single('image'),
-    validateEmployeeRoutes, combineEmployeeAddController)
-combineRoutes.route('/get/employee').get(
-    officerJwtDecode,
-    validateEmployeeGetRoutes, combineEmployeeGetController
-)
+// combineRoutes.route('/add/employee').post(
+//     upload.single('image'),
+//     validateEmployeeRegisterRoutes, combineEmployeeAddController)
+// combineRoutes.route('/get/employee').get(
+//     adminJwtDecode,
+//     validateEmployeeGetRoutes, combineEmployeeGetController
+// )
 
 
-combineRoutes.route('/employee/status-change').post(officerJwtDecode, validateEmployeeStatusChangeRoutes, combineEmployeeStatusChange)
+// combineRoutes.route('/employee/status-change').post(adminJwtDecode, validateEmployeeStatusChangeRoutes, combineEmployeeStatusChange)
 
 
-combineRoutes.route('/add/face').get(faceRegisterController)
+// combineRoutes.route('/add/face').get(faceRegisterController)
 
 
 

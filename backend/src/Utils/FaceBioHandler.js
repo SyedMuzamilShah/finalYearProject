@@ -1,7 +1,7 @@
 import axios from 'axios';
 import FormData from 'form-data';
 import { ErrorResponse } from './Error.js';
-
+import fs from "fs"
 // Fetch and validate API credentials
 const getApiCredentials = () => {
     const api_key = process.env.FACE_PLUS_API_KEY;
@@ -25,13 +25,15 @@ const createFormData = (data) => {
 const makeApiRequest = async (url, data, action) => {
     try {
         const credentials = getApiCredentials();
-        const { form, headers } = createFormData({ ...credentials, ...data });
 
+        const { form, headers } = createFormData({ ...credentials, ...data });
+        console.log(data)
         console.log(`[${action}] Request started...`);
 
         const response = await axios.post(url, form, { headers });
 
         console.log(`[${action}] Success:`, response.data);
+        console.log(response.data)
         return response.data;
     } catch (error) {
         const status = error.response?.status || 500;
@@ -73,3 +75,25 @@ export const deleteFace = async (faceToken) => {
         'Face Deletion'
     );
 };
+
+
+export const registerLocalImage = async ( localImage ) => {
+    // Create read stream
+    const imageStream = fs.createReadStream(localImage);
+
+    try {
+        const data = await makeApiRequest(
+            'https://api-us.faceplusplus.com/facepp/v3/detect',
+            { image_file : imageStream},
+            'Face Registration Local'
+        );
+    
+        const faceToken = data.faces?.[0]?.face_token;
+        if (!faceToken) throw new ErrorResponse(400, "No face detected in the image.");
+    
+        return { faceToken, data };
+    } catch (err) {
+     throw err   
+    }
+
+}

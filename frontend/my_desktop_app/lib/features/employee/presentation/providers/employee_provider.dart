@@ -5,7 +5,6 @@ import 'package:my_desktop_app/features/employee/data/datasources/employee_datas
 import 'package:my_desktop_app/features/employee/data/models/request/employee_prams.dart';
 import 'package:my_desktop_app/features/employee/data/repositories/employee_repo_impl.dart';
 import 'package:my_desktop_app/features/employee/domain/entities/employee_entities.dart';
-import 'package:my_desktop_app/features/employee/domain/repositories/employee_repo.dart';
 import 'package:my_desktop_app/features/employee/domain/usecases/employee_usecase.dart';
 
 final employeeProvider = StateNotifierProvider<EmployeeNotifier, EmployeeState>(

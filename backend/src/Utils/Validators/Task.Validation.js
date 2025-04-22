@@ -6,7 +6,9 @@ export const validateTaskCreationRoute = [
     .withMessage("Title is required")
     .isLength({ min: 3, max: 50 })
     .withMessage("Task title must be between 3-50 characters"),
-
+  body("organizationId")
+    .notEmpty()
+    .withMessage("organization id is required"),
   body("description")
     .notEmpty()
     .withMessage("Description is required")
@@ -78,6 +80,13 @@ export const validateTaskAssignRoute = [
     .withMessage("Each employee ID must be a valid MongoDB ObjectId"),
 ];
 
+export const validateTaskGetRoute = []
+
+export const validateTaskUpdateRoute = []
+
+export const validateTaskDeleteRoute = []
+
+export const validateTaskStatusChangeRoute = []
 
 export const validateTaskVerifiedRoute = [
   query("taskId")
@@ -103,3 +112,5 @@ export const validateTaskVerifiedRoute = [
     .isMongoId()
     .withMessage("Each employee ID must be a valid MongoDB ObjectId"),
 ];
+
+

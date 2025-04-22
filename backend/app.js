@@ -4,7 +4,7 @@ const app = express();
 import path from 'path';
 
 // middleware to activate the app/server public folder to access them in our all app
-app.use(express.static('./public'))
+app.use("/images", express.static('./public/temp/'))
 
 // for ejs used
 app.set('view engine', 'ejs');
@@ -122,18 +122,35 @@ import { ejsRoutes } from './src/Routes/Ejs.Routes.js';
 import { STATUS_CODES } from './constant.js';
 import { readEmployeeServices } from './src/Services/Employee/Employee.Services.js';
 import { decodeAddress } from './src/Utils/AddressConverter.js';
+import { deleteImage } from './src/Utils/DeleteImageFromLocalServer.js';
 // import { faceRegistration, faceVerification } from './src/utils/faceVerification.js';
 // middleware to send the error message from server to backend
-app.use((err, _, res, next) => {
 
-    if (err instanceof ErrorResponse) {
-        return res.status(err.statusCode).json(err.toJson())
-    }
-    console.error(`Error Log Last Middleware:\n\t\t ${err.message}`)
 
-    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR)
-        .json({ statusCode: STATUS_CODES.INTERNAL_SERVER_ERROR, message: 'some thing went wrong' })
-})
- 
+app.use((err, req, res, next) => {
+  // ✅ Handle custom errors
+  if (err instanceof ErrorResponse) {
+    return res.status(err.statusCode).json(err.toJson());
+  }
+
+
+  // TODO: Change them
+  if (err.message === "File too large"){
+    return res.status(STATUS_CODES.BAD_REQUEST).json({
+        statusCode: STATUS_CODES.BAD_REQUEST,
+        message: "Image file is must be 2mb"
+      });
+  }
+
+  // ✅ Optional: log unknown error info
+  console.error(`Unhandled Error:\n\t${err.message}`);
+
+  // ✅ Return generic server error
+  return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+    statusCode: STATUS_CODES.INTERNAL_SERVER_ERROR,
+    message: 'Something went wrong',
+  });
+});
+
 
 export { app }

@@ -3,9 +3,10 @@ import 'package:my_desktop_app/features/task/domain/entities/task_entities.dart'
 
 
 TaskStatus _parseStatus(String status) {
+  print(status);
   return TaskStatus.values.firstWhere(
-    (e) => e.toString().split('.').last == status.toUpperCase(),
-    orElse: () => TaskStatus.pending, // Default to pending if invalid status
+    (e) => e.toString().split('.').last.toUpperCase() == status.toUpperCase(),
+    orElse: () => TaskStatus.created, // Default to pending if invalid status
   );
 }
 
@@ -38,6 +39,7 @@ class TaskResponseModel extends TaskEntities {
       location: json['location'] != null
           ? LocationModel.fromJson(json['location'])
           : null,
+
     );
   }
 }

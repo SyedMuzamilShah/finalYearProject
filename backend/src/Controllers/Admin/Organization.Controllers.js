@@ -1,100 +1,155 @@
-
 import { STATUS_CODES } from "../../../constant.js";
-import { controllerHandler } from "../../Utils/ControllerHandler.js";
 import { ErrorResponse } from "../../Utils/Error.js";
-import { deleteOrganization, getAllOrganization, organizationCreateServices, organizationIsRegisterd } from "../../Services/Organization.Services.js";
+import { validationResult } from "express-validator";
 import { SuccessResponse } from "../../Utils/Success.js";
 import { decodeAddress } from "../../Utils/AddressConverter.js";
-import { addressCreateServices } from "../../Services/Address.Services.js"
-import { validationResult } from "express-validator";
-export const registerOrganizationController = controllerHandler(async (req, res) => {
+import { controllerHandler } from "../../Utils/ControllerHandler.js";
+import { 
+    deleteOrganization, 
+    getAllOrganization, 
+    organizationCreateServices, 
+    organizationIsRegistered, 
+    updateOrganization
+} from "../../Services/Organization.Services.js";
+
+/**
+ * Registers a new organization
+ */
+export const adminCreateOrganization = controllerHandler(async (req, res) => {
     const adminId = req.user._id;
-    // validate the request
-    const errors = validationResult(req);
 
-    // if not then throw an error
-    if (!errors.isEmpty()) {
-        throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, 'validation faild', errors.array())
-    }
-
-    let dataObject = { adminId, ...req.body }
+    const dataObject = { adminId, ...req.body };
+    
     try {
-        var isRegisterd = await organizationIsRegisterd(dataObject)
-    }catch (err){
+        // Check if organization exists
+        const isRegistered = await organizationIsRegistered(dataObject);
+        if (isRegistered) {
+            throw new ErrorResponse(
+                STATUS_CODES.CONFLICT,
+                'An organization with that email or ID is already registered'
+            );
+        }
+
+        // Process address - currently mocked
+        // const address = req.body.address;
+        // const response = await decodeAddress(address);
+        // if (response.error) {
+        //     throw new ErrorResponse(
+        //         STATUS_CODES.BAD_REQUEST, 
+        //         response.error
+        //     );
+        // }
+
+        // // Create organization (using mocked address ID)
+        // dataObject.address = "67da450365ab8a16a9ef9649"; // TODO: Replace with real address service
+
+
+        const organization = await organizationCreateServices(dataObject);
+
+        return res.status(STATUS_CODES.CREATED).json(
+            new SuccessResponse(
+                STATUS_CODES.CREATED,
+                'Organization created successfully', 
+                { organization }
+            ).toJson()
+        );
+        
+    } catch (err) {
+        console.error("Organization registration error:", err.message);
+        throw err;
+    }
+});
+
+/**
+ * Retrieves organization(s) for admin
+ */
+export const adminGetAllOrganization = controllerHandler(async (req, res) => {
+    const adminId = req.user._id;
+    // Validate request
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
         throw new ErrorResponse(
-            STATUS_CODES.INTERNAL_SERVER_ERROR,
-            'Internel server error please try again'
+            STATUS_CODES.BAD_REQUEST, 
+            'Validation failed', 
+            errors.array()
         );
     }
-    if (isRegisterd) {
+
+    const dataObject = { adminId, ...req.body, ...req.query };
+    console.log(dataObject)
+    try {
+        const { organizations } = await getAllOrganization(dataObject);
+        return res.status(STATUS_CODES.OK).json(
+            new SuccessResponse(
+                STATUS_CODES.OK,
+                'Organizations retrieved successfully', 
+                { organizations }
+            ).toJson()
+        );
+        
+    } catch (err) {
+        console.error("Organization fetch error:", err.message);
+        throw err;
+    }
+});
+
+/**
+ * Deletes an admin's organization
+ */
+export const adminDeleteOrganization = controllerHandler(async (req, res) => {
+    const adminId = req.user._id;
+    
+    // Validate request
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
         throw new ErrorResponse(
-            STATUS_CODES.CONFLICT,
-            'With That Email Organization is already registerd'
+            STATUS_CODES.BAD_REQUEST, 
+            'Validation failed', 
+            errors.array()
         );
     }
 
-    const address = req.body.address
-    const response = await decodeAddress(address)
-
-    if (response.error) {
-        throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, response.error)
+    const dataObject = { adminId, ...req.query };
+    
+    try {
+        const { organization } = await deleteOrganization(dataObject);
+        
+        return res.status(STATUS_CODES.NO_CONTENT).json(
+            new SuccessResponse(
+                STATUS_CODES.NO_CONTENT,
+                'Organization deleted successfully', 
+                { organization }
+            ).toJson()
+        );
+        
+    } catch (err) {
+        console.error("Organization deletion error:", err.message);
+        throw err;
     }
+});
 
-    // const locationData = { ...response[0], address }
-    // const addressModelObject = await addressCreateServices(locationData)
-
-    // dataObject.address = addressModelObject._id
-    dataObject.address = "67da450365ab8a16a9ef9649"
-
-    const organization = await organizationCreateServices(dataObject)
-
-    // return response
-    return res.status(STATUS_CODES.CREATED)
-        .json(new SuccessResponse(
-            STATUS_CODES.CREATED,
-            'organization created successfully', { organization: organization }).toJson());
-})
-
-export const getAllAdminOrganization = controllerHandler(async (req, res) => {
+/**
+ * edit an admin's organization
+ */
+export const adminEditOrganizationController = controllerHandler(async (req, res) => {
     const adminId = req.user._id;
-    // validate the request
 
-    const errors = validationResult(req);
 
-    // if not then throw an error
-    if (!errors.isEmpty()) {
-        throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, 'validation faild', errors.array())
+    const dataObject = { adminId, ...req.query };
+    
+    try {
+        const { organization } = await updateOrganization(dataObject);
+        
+        return res.status(STATUS_CODES.NO_CONTENT).json(
+            new SuccessResponse(
+                STATUS_CODES.NO_CONTENT,
+                'Organization deleted successfully', 
+                { organization }
+            ).toJson()
+        );
+        
+    } catch (err) {
+        console.error("Organization deletion error:", err.message);
+        throw err;
     }
-
-    let dataObject = { adminId, ...req.body, ...req.query }
-
-    const { organization } = await getAllOrganization(dataObject)
-    console.log(organization)
-    // return response
-    return res.status(STATUS_CODES.OK)
-        .json(new SuccessResponse(
-            STATUS_CODES.OK,
-            'organization get Successfully', { organization: organization }).toJson());
-})
-
-
-export const delteAdminOrganization = controllerHandler(async (req, res) => {
-    const adminId = req.user._id;
-    // validate the request
-
-    const errors = validationResult(req);
-
-    // if not then throw an error
-    if (!errors.isEmpty()) {
-        throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, 'validation faild', errors.array())
-    }
-
-    let dataObject = { adminId, ...req.query }
-
-    const { organization } = await deleteOrganization(dataObject)
-    // return response
-    return res.status(STATUS_CODES.SUCCESS_NO_RESPONSE)
-        .json(new SuccessResponse(
-            STATUS_CODES.SUCCESS_NO_RESPONSE,
-            'organization delete Successfully', { organization: organization }).toJson());
-})
+});

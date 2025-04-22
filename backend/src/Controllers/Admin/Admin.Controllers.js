@@ -2,54 +2,45 @@ import { STATUS_CODES } from "../../../constant.js";
 import { controllerHandler } from "../../Utils/ControllerHandler.js";
 import { ErrorResponse } from "../../Utils/Error.js";
 import { SuccessResponse } from "../../Utils/Success.js";
-import { getAdminProfileService, officeAdminChangePasswordServices, officeAdminCreateServices, officeAdminLoginServices, officeAdminLogOutServices, refreshTokenServices } from "../../Services/Admin.Services.js"
 import { validationResult } from "express-validator";
-export const registerationController = controllerHandler(async (req, res) => {
-  console.log(req.body)
-  // validate the request
-  const errors = validationResult(req);
-  // if not then throw an error
-  if (!errors.isEmpty()) {
-    throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, 'validation faild', errors.array())
-  }
+import { adminRegisterService } from "../../Services/Admin/Auth/AdminRegister.Service.js";
+import { adminLoginService } from "../../Services/Admin/Auth/AdminLogin.Service.js";
+import { adminLogoutService } from "../../Services/Admin/Auth/AdminLogout.Service.js";
+import { adminChangePasswordService } from "../../Services/Admin/Auth/AdminChangePassword.Service.js";
+import { adminProfileService } from "../../Services/Admin/Auth/AdminProfile.Service.js";
+import { adminRefreshTokenService } from "../../Services/Admin/Auth/AdminRefreshToken.Service.js";
+import { adminForgotPasswordService } from "../../Services/Admin/Auth/AdminForgetPassword.Service.js";
 
-  const { userResponse, tokens } = await officeAdminCreateServices(req.body)
+export const adminRegisterController = controllerHandler(async (req, res) => {
+  
+  const { user, tokens } = await adminRegisterService(req.body)
 
   // return response
   return res.status(STATUS_CODES.CREATED)
     .json(new SuccessResponse(
       STATUS_CODES.CREATED,
-      'user created successfully', { user: userResponse, tokens: tokens }).toJson());
+      'User created successfully', { user , tokens }).toJson());
 });
 
-export const loginController = controllerHandler(async (req, res) => {
-  // Validate the request
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    throw new ErrorResponse(
-      STATUS_CODES.BAD_REQUEST,
-      'Validation failed',
-      errors.array()
-    );
-  }
+export const adminLoginController = controllerHandler(async (req, res) => {
 
   // Call the login service
-  const { userResponse, tokens } = await officeAdminLoginServices(req.body);
+  const { user, tokens } = await adminLoginService(req.body);
 
   // Return success response
   res.status(STATUS_CODES.OK).json(
     new SuccessResponse(
       STATUS_CODES.OK,
       'Login successful',
-      { user: userResponse, tokens: tokens }
+      { user: user, tokens: tokens }
     ).toJson()
   );
 });
 
-export const logoutController = controllerHandler(async (req, res) => {
+export const adminLogoutController = controllerHandler(async (req, res) => {
   const userId = req.user._id; // Assuming the user ID is available in `req.user`
   // Call the logout service
-  const logout = await officeAdminLogOutServices(userId);
+  const logout = await adminLogoutService(userId);
 
   if (logout) {
     // Return success response
@@ -63,10 +54,9 @@ export const logoutController = controllerHandler(async (req, res) => {
   }
 });
 
-export const forgotPasswordController = controllerHandler(async (req, res) => { });
+export const adminForgotPasswordController = controllerHandler(async (req, res) => {});
 
-
-export const changePasswordController = controllerHandler(async (req, res) => {
+export const adminChangePasswordController = controllerHandler(async (req, res) => {
   // Validate the request
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -83,7 +73,7 @@ export const changePasswordController = controllerHandler(async (req, res) => {
 
   try {
     // Call the change password service
-    const user = await officeAdminChangePasswordServices(dataObject);
+    const {user} = await adminChangePasswordService(dataObject);
 
     // Return success response
     return res.status(STATUS_CODES.OK).json(
@@ -107,12 +97,12 @@ export const changePasswordController = controllerHandler(async (req, res) => {
   }
 });
 
-export const getAdminProfileController = controllerHandler(async (req, res) => {
+export const adminProfileController = controllerHandler(async (req, res) => {
   const userId = req.user._id; // Assuming the user ID is available in `req.user`
 
   try {
     // Call the get profile service
-    const user = await getAdminProfileService(userId);
+    const { user } = await adminProfileService(userId);
 
     // Return success response
     return res.status(STATUS_CODES.OK).json(
@@ -136,16 +126,8 @@ export const getAdminProfileController = controllerHandler(async (req, res) => {
   }
 });
 
-export const refreshToken = controllerHandler(async (req, res) => {
-  console.log("RefreshToken Controller")
-  // validate the request
-  const errors = validationResult(req);
-  // if not then throw an error
-  if (!errors.isEmpty()) {
-    throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, 'RefreshToken required', errors.array())
-  }
-
-  const tokens = await refreshTokenServices(req.body)
+export const adminRefreshToken = controllerHandler(async (req, res) => {
+  const {tokens} = await adminRefreshTokenService(req.body)
 
   console.log(tokens)
 

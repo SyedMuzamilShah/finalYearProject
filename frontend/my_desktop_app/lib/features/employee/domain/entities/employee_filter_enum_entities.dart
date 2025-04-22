@@ -5,3 +5,11 @@ enum EmployeeStatus {
   rejected,
   blocked,
 }
+
+
+enum EmployeeRole {
+  guest,
+  servant, 
+  manager,
+  employee,
+}

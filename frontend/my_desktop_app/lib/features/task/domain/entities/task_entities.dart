@@ -2,6 +2,10 @@ import 'package:my_desktop_app/features/task/data/models/request/task_prams.dart
 
 enum TaskStatus {
   all,
+  // created,
+  // assigned,
+  // completed,
+  // verified
   pending,
   created,
   assigned,

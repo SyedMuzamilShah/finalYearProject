@@ -2,49 +2,63 @@ import { STATUS_CODES } from "../../../constant.js";
 import { employeeModel } from "../../Models/Employee.Model.js";
 import { ErrorResponse } from "../../Utils/Error.js";
 
-export const getEmployeeServices = async (dataObject) => {
-    console.log(dataObject);
-    console.log("Inside getEmployeeServices");
-    const { adminId, id, organizationId, status, employeeId, isEmailVerified, role, search } = dataObject;
 
+/** 
+ *  @description This function retrieves employee data based on the provided filters.
+ *  @param {Object} dataObject - The object containing filter criteria and other parameters.
+ *  @param {string} dataObject.organizationId - The ID of the organization to filter employees required.
+ *  @param {string} dataObject.id - The ID of the employee to retrieve.
+ *  @param {string} dataObject.status - The status of the employee (e.g., verfied, block, pending).
+ *  @param {string} dataObject.employeeId - The ID of the employee to filter.
+ *  @param {string} dataObject.search - The search term for employee name or email.
+ *  @param {boolean} dataObject.isEmailVerified - Whether the employee's email is verified.
+ *  @param {string} dataObject.role - The role of the employee to filter.
+ *  @returns {Array<doc>} - An array of employee documents matching the criteria.
+ *  @throws {ErrorResponse} - Throws an error if the query fails or if no employees are found.
+*/
+
+
+export const getEmployeeServices = async (dataObject) => {
+    const { adminId, id, organizationId, status, employeeId, isEmailVerified, role, search, imageAcceptedForToken, imageUrl } = dataObject;
     try {
         // Start building the query object
         let query = {};
 
         // Add filters dynamically if they are provided
-        if (organizationId) query.organizationId = organizationId;
+        // if (organizationId) query.organizationId = organizationId;
+        if (!organizationId) {
+            throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, 'Organization ID is required');
+        }
+
+        query.organizationId = organizationId
+
         if (id) query._id = id;
-        if (status){
-            if (status.toLowerCase() !== 'all'){
+        // if (adminId) query.createdBy = adminId;
+        if (imageAcceptedForToken) query.imageAcceptedForToken = imageAcceptedForToken;
+        if (imageUrl) query.imageUrl = imageUrl;
+        if (status) {
+            if (status.toLowerCase() !== 'all') {
                 query.status = status.toUpperCase();
             }
         };
         if (employeeId) query.employeeId = employeeId;
         if (typeof isEmailVerified === "boolean") query.isEmailVerified = isEmailVerified;
         if (role) query.role = role;
-
         // Add text search if provided
         if (search) {
             query.$or = [
+                { userName: { $regex: search, $options: 'i' } },
                 { name: { $regex: search, $options: 'i' } },
                 { email: { $regex: search, $options: 'i' } },
                 { employeeId: { $regex: search, $options: 'i' } },
-                { role : {$regex: search, $options: 'i' } }
+                { role: { $regex: search, $options: 'i' } }
             ];
         }
-        console.log("Final query:", query);
-        
+
         const employees = await employeeModel.find(query);
-        
-        console.log("Found employees:", employees.length);
-        
-        if (employees.length === 0) {
-            return { message: "No employees found matching the criteria", employees: [] };
-        }
-        
-        return { employees };
+
+        return { user: employees };
     } catch (error) {
-        console.error("Error fetching employees:", error);
 
         if (error.name === "CastError") {
             throw new ErrorResponse(
@@ -62,17 +76,91 @@ export const getEmployeeServices = async (dataObject) => {
 
 
 export const employeeUpdateServices = async (dataObject) => {
-    
+    const { employeeId } = dataObject
+    const employee = await employeeModel.findById(employeeId);
+    if (!employee) {
+        throw new ErrorResponse(STATUS_CODES.NOT_FOUND, 'Employee not found');
+    }
+    // Define fields allowed to be updated
+    const allowedFields = [
+        'name',
+        'phoneNumber',
+    ];
+
+    // update the employee data in database
+    // Loop through allowed fields and update the employee object
+    for (const key of allowedFields) {
+        if (dataObject[key] !== undefined) {
+            employee[key] = dataObject[key];
+        }
+    }
+
+    await employee.save();
+
+    return { user: employee };
 }
+
+export const employeeUpdateToGether = async (dataObject) => {
+    const { employeeId } = dataObject
+    const employee = await employeeModel.findById(employeeId);
+    if (!employee) {
+        throw new ErrorResponse(STATUS_CODES.NOT_FOUND, 'Employee not found');
+    }
+    // Define fields allowed to be updated
+    const allowedFields = [
+        'name',
+        'phoneNumber',
+        'role',
+        'status',
+        "uploadNewImage"
+    ];
+
+    // update the employee data in database
+    // Loop through allowed fields and update the employee object
+    for (const key of allowedFields) {
+        if (dataObject[key] !== undefined) {
+            employee[key] = dataObject[key];
+        }
+    }
+
+    await employee.save();
+
+    return { user: employee };
+}
+
 export const employeeStatusChange = async (dataObject) => {
-    const { adminId, employeeId , status } = dataObject;
+    const { adminId, employeeId, status } = dataObject;
 
     const employee = await employeeModel.findById(employeeId);
     if (!employee) {
         throw new ErrorResponse(STATUS_CODES.NOT_FOUND, 'Employee not found');
     }
 
-    employee.status = status;
+    employee.status = status.toUpperCase();
     await employee.save();
-    return { employees: employee };
+    return { user: employee };
+}
+
+export const employeeRoleChange = async (dataObject) => {
+    const { adminId, employeeId, role } = dataObject;
+
+    const employee = await employeeModel.findById(employeeId);
+    if (!employee) {
+        throw new ErrorResponse(STATUS_CODES.NOT_FOUND, 'Employee not found');
+    }
+
+    employee.role = role.toUpperCase();
+    await employee.save();
+    return { user: employee };
+}
+
+export const employeeDelete = async (dataObject) => {
+    const { adminId, employeeId } = dataObject;
+
+    const employee = await employeeModel.findByIdAndDelete(employeeId);
+    if (!employee) {
+        throw new ErrorResponse(STATUS_CODES.NOT_FOUND, 'Employee not found');
+    }
+
+    return { user: true };
 }

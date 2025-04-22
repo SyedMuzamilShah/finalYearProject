@@ -1,5 +1,5 @@
 import { STATUS_CODES } from "../../../constant.js";
-import { employeeModel } from "../../Models/Employee.Model.js";
+import { employeeModel, EmployeeStatus } from "../../Models/Employee.Model.js";
 import { organizationModel } from "../../Models/Organization.Model.js";
 import { ErrorResponse } from "../../Utils/Error.js";
 import jwt from "jsonwebtoken"
@@ -9,9 +9,7 @@ export const employeeCreateServices = {
         return await employeeModel.findOne({ $or: [{ email }, { userName }] }).lean();
     },
     finaOrganization: async ({ organizationId, id }) => {
-        console.log(organizationId)
-        console.log(id)
-        return await organizationModel.findOne({ $or: [{organizationId}, {_id : id}] })
+        return await organizationModel.findOne({ $or: [{ organizationId }, { _id: id }] })
     },
     createEmployee: async (dataObject) => {
         const { adminId, userName, email, name, password, role, phoneNumber, organizationId, biometricToken, imageUrl } = dataObject;
@@ -19,24 +17,39 @@ export const employeeCreateServices = {
         try {
             // Create new employee
             const employee = await employeeModel.create({
-                userName, imageUrl, name, email, password, biometricToken, phoneNumber, role, organizationId
+                userName,
+                imageUrl: imageUrl,
+                
+                name, email, password, biometricToken, phoneNumber, role : role.toUpperCase(), organizationId
             });
 
             // Generate tokens
-            const access = employee.generateAccessToken();
-            const refresh = employee.generateRefreshToken();
+            let access;
+            let refresh;
 
-            // Save refresh token
-            employee.refreshToken = refresh;
+            if (!adminId){
+                access = employee.generateAccessToken();
+                refresh = employee.generateRefreshToken();
+                
+                // Save refresh token
+                employee.refreshToken = refresh;
+            }
+            
+
+            // Admin
+            if (adminId){
+                employee.status = EmployeeStatus.VERIFIED;
+            }
+
             await employee.save();
 
 
             // Prepare response
-            const userResponse = employee.toObject();
-            delete userResponse.password;
-            delete userResponse.__v;
-            delete userResponse.refreshToken;
-            return { userResponse, tokens: { accessToken: access, refreshToken: refresh } };
+            // const userResponse = employee.toObject();
+            // delete userResponse.password;
+            // delete userResponse.__v;
+            // delete userResponse.refreshToken;
+            return { user : employee, tokens: { accessToken: access, refreshToken: refresh } };
 
         } catch (err) {
             console.error("Error in employee creation service:", err.message);
@@ -47,54 +60,48 @@ export const employeeCreateServices = {
 
 
 
-export const employeeLoginServices = {
-    login: async ({ email, userName, password }) => {
-        try {
-            // Find the user by email
-            const user = await employeeModel.findOne({
-                $or : [{email}, {userName}]
-            }).select('+password');
+export const employeeLoginServices = async (dataObject) => {
+    const { email, userName, password } = dataObject;
+    try {
+        // Find the user by email
+        const user = await employeeModel.findOne({
+            $or: [{ email }, { userName }]
+        }).select('+password');
 
-            console.log(user);
-            if (!user) {
-                throw new ErrorResponse(
-                    STATUS_CODES.NOT_FOUND,
-                    'Employee is not registered withthat crediational'
-                );
-            }
 
-            // Validate the password
-            const isPasswordValid = await user.isPasswordValid(password);
-            if (!isPasswordValid) {
-                throw new ErrorResponse(
-                    STATUS_CODES.NOT_FOUND,
-                    'Invalid creadtional'
-                );
-            }
-
-            // Generate tokens
-            const access = await user.generateAccessToken();
-            const refresh = await user.generateRefreshToken();
-
-            // Save the refresh token in the database (hashed)
-            user.refreshToken = refresh
-            await user.save();
-
-            // Prepare the response
-            const userResponse = user.toObject();
-            delete userResponse.password;
-            delete userResponse.__v;
-            delete userResponse.refreshToken;
-
-            return { userResponse, tokens: { accessToken: access, refreshToken: refresh } };
-        } catch (err) {
-            // Log the error for debugging
-            // console.error('Login service error:', err);
-            throw err;
+        if (!user) {
+            throw new ErrorResponse(
+                STATUS_CODES.NOT_FOUND,
+                'Employee is not registered withthat crediational'
+            );
         }
+
+        // Validate the password
+        const isPasswordValid = await user.isPasswordValid(password);
+        console.log("Testing. the password :")
+        console.log(isPasswordValid)
+        if (!isPasswordValid) {
+            throw new ErrorResponse(
+                STATUS_CODES.NOT_FOUND,
+                'Invalid creadtional'
+            );
+        }
+
+        // Generate tokens
+        const access = await user.generateAccessToken();
+        const refresh = await user.generateRefreshToken();
+
+        // Save the refresh token in the database (hashed)
+        user.refreshToken = refresh
+        await user.save();
+
+        return { userResponse : user, tokens: { accessToken: access, refreshToken: refresh } };
+    } catch (err) {
+        // Log the error for debugging
+        // console.error('Login service error:', err);
+        throw err;
     }
 }
-
 
 export const refreshTokenServices = async (dataObject) => {
     const { refreshToken } = dataObject;

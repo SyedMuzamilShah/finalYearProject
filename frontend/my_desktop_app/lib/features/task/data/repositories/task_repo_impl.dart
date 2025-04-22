@@ -40,10 +40,12 @@ class TaskRepoImpl extends TaskRepo {
     );
     return response.fold((err) => Left(err), (succ) {
       List data = succ['data']['tasks'];
-      
-      List<TaskEntities> organization =
+      print("Task Create Model");
+      List<TaskEntities> task =
           data.map((e) => TaskResponseModel.fromJson(e)).toList();
-      return Right(organization);
+      print("Reading the data");
+      print(task);
+      return Right(task);
     });
   }
 

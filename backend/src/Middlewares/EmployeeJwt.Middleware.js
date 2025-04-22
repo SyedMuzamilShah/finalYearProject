@@ -4,44 +4,50 @@ import { STATUS_CODES } from '../../constant.js'
 import jwt from 'jsonwebtoken'
 import { employeeModel } from '../Models/Employee.Model.js'
 
-export const employeeJWTDecode = controllerHandler(async (req, _, next)=> {
+
+export const employeeJWTDecode = controllerHandler(async (req, _, next) => {
     try {
-        // Get access token from web cookies | frontend header 
-        const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "")
+        // Get access token from web cookies or frontend header
+        const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
+        console.log(token)
+        // If access token is not present, throw an error
+        if (!token) {
+            throw new ErrorResponse(STATUS_CODES.UNAUTHORIZED, "Access token is required");
+        }
 
-        // if access token is not present then throw an error
-        if (!token) throw new ErrorResponse(STATUS_CODES.UNAUTHORIZED, "Access token is required")
-
-        // decode the access token
-        const decode = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET_KEY, (error, decode)=> {
-
-            // if error occurs then throw an error
-            if (error){
-                if (error.name === 'TokenExpiredError') throw new ErrorResponse(STATUS_CODES.UNAUTHORIZED, "Access token expired")
-                else throw new ErrorResponse(STATUS_CODES.UNAUTHORIZED, "Invalid token")
+        // Decode the access token
+        let decode;
+        try {
+            decode = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET_KEY);
+        } catch (error) {
+            console.log(error.name)
+            if (error.name === 'TokenExpiredError') {
+                throw new ErrorResponse(STATUS_CODES.UNAUTHORIZED, "Access token expired");
+            } else {
+                throw new ErrorResponse(STATUS_CODES.UNAUTHORIZED, "Invalid token");
             }
+        }
 
-            // return the decode token
-            return decode;
-        })
+        // Find the user in the database
+        const user = await employeeModel.findById(decode?._id);
 
-        // find the user _id in database and get whole user document
-        const user = await employeeModel.findById(decode?._id)
+        // If user not found, throw an error
+        if (!user) {
+            throw new ErrorResponse(STATUS_CODES.UNAUTHORIZED, "User not found");
+        }
+        
+        // If refreshToken is null, block access (User is logged out)
+        if (user.refreshToken == null) {
+            throw new ErrorResponse(STATUS_CODES.UNAUTHORIZED, "User is logged out. Please log in again.");
+        }
 
-        // if user not found then throw an error
-        if (!user) throw new ErrorResponse(STATUS_CODES.UNAUTHORIZED, "User not found")
+        // Attach user data to the request object
+        req.user = user;
 
-        // add new field in request object
-        req.user = user
-
-        // move forward
-        next()
-    } catch (e){
-
-        // if error occurs then throw an error first access happend message | code if not then add own message | code
-        throw new ErrorResponse(
-            error.statusCode || STATUS_CODES.UNAUTHORIZED,
-            error.message || "Unauthorized access"
-        );
+        // Move forward
+        next();
+    } catch (err) {
+        // Pass the error to Express error handling
+        next(err);
     }
-})
+});

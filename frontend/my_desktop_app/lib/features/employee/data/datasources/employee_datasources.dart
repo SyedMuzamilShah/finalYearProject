@@ -7,12 +7,11 @@ abstract class EmployeeRemoteDataSource {
   Future<EmployeeEntities> addEmployee(Map<String, dynamic> prams);
   Future<List<EmployeeEntities>> getEmployees([Map<String, dynamic>? prams]);
   Future<EmployeeEntities> employeeStatusChange(Map<String, dynamic> prams);
-  // Future<List<EmployeeEntities>> getRequestedEmployees(String organizationId);
-  // Future<List<EmployeeEntities>> getBlockedEmployees(String organizationId);
-  // Future<EmployeeEntities> acceptEmployeeRequest(String organizationId, String employeeId);
-  // Future<void> denyEmployeeRequest(String organizationId, String employeeId);
-  // Future<EmployeeEntities> blockEmployee(String organizationId, String employeeId);
-  // Future<EmployeeEntities> unblockEmployee(String organizationId, String employeeId);
+  Future<EmployeeEntities> updateEmployee(Map<String, dynamic> params);
+  Future<bool> deleteEmployee(Map<String, dynamic> params);
+  Future<bool> allowPictureForProcessing(Map<String, dynamic> params);
+  Future<EmployeeEntities> employeeRoleChange(Map<String, dynamic> params);
+  Future<EmployeeEntities> wholeDataUpdate(Map<String, dynamic> params);
 }
 
 class EmployeeRemoteDataSourceImpl implements EmployeeRemoteDataSource {
@@ -47,10 +46,9 @@ class EmployeeRemoteDataSourceImpl implements EmployeeRemoteDataSource {
       final response = await _apiServices.getRequest(
           endPoint: ServerUrl.employeeGetRoute, queryParameters: prams);
       if (response.statusCode == 200) {
-
         List data = response.data['data']['user'];
-      List<EmployeeEntities> createData =
-          data.map((e) => EmployeeResponseModel.fromJson(e)).toList();
+        List<EmployeeEntities> createData =
+            data.map((e) => EmployeeResponseModel.fromJson(e)).toList();
         return createData;
       }
       throw Exception("");
@@ -58,14 +56,14 @@ class EmployeeRemoteDataSourceImpl implements EmployeeRemoteDataSource {
       rethrow;
     }
   }
-  
+
   @override
-  Future<EmployeeEntities> employeeStatusChange(Map<String, dynamic> prams) async {
-        try {
+  Future<EmployeeEntities> employeeStatusChange(
+      Map<String, dynamic> prams) async {
+    try {
       final response = await _apiServices.postRequest(
           endPoint: ServerUrl.employeeStatusChangeRoute, body: prams);
       if (response.statusCode == 200) {
-
         EmployeeEntities createData =
             EmployeeResponseModel.fromJson(response.data['data']['user']);
         return createData;
@@ -74,5 +72,43 @@ class EmployeeRemoteDataSourceImpl implements EmployeeRemoteDataSource {
     } catch (e) {
       rethrow;
     }
+  }
+
+  @override
+  Future<bool> allowPictureForProcessing(Map<String, dynamic> params) async {
+    try {
+      final response = await _apiServices.patchRequest(
+          endPoint: ServerUrl.employeeStatusChangeRoute, body: params);
+      if (response.statusCode == 200) {
+        
+      }
+      throw Exception("");
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<bool> deleteEmployee(Map<String, dynamic> params) {
+    // TODO: implement deleteEmployee
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<EmployeeEntities> employeeRoleChange(Map<String, dynamic> params) {
+    // TODO: implement employeeRoleChange
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<EmployeeEntities> updateEmployee(Map<String, dynamic> params) {
+    // TODO: implement updateEmployee
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<EmployeeEntities> wholeDataUpdate(Map<String, dynamic> params) {
+    // TODO: implement wholeDataUpdate
+    throw UnimplementedError();
   }
 }

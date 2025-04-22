@@ -6,6 +6,7 @@ import 'package:my_desktop_app/core/widgets/loading_widget.dart';
 import 'package:my_desktop_app/core/widgets/my_button.dart';
 import 'package:my_desktop_app/core/widgets/my_text_field.dart';
 import 'package:my_desktop_app/features/employee/data/models/request/employee_prams.dart';
+import 'package:my_desktop_app/features/employee/domain/entities/employee_filter_enum_entities.dart';
 import 'package:my_desktop_app/features/employee/presentation/providers/employee_provider.dart';
 import 'package:my_desktop_app/features/organization/presentation/providers/organization_provider.dart';
 
@@ -58,8 +59,10 @@ class EmployeeAddWidgetState extends State<EmployeeAddWidget> {
       body: SingleChildScrollView(
         child: Consumer(
           builder: (context, ref, __) {
-            final orgState = ref.watch(organizationProvider).selectedOrganization;
-          final organizationId = orgState?.organizationId ?? 'No organization selected';
+            final orgState =
+                ref.watch(organizationProvider).selectedOrganization;
+            final organizationId =
+                orgState?.organizationId ?? 'No organization selected';
             final state = ref.watch(employeeProvider);
             final notifier = ref.watch(employeeProvider.notifier);
 
@@ -253,12 +256,12 @@ class EmployeeAddWidgetState extends State<EmployeeAddWidget> {
                   DropdownButtonFormField<String>(
                     value: _selectedRole,
                     onChanged: (value) => setState(() => _selectedRole = value),
-                    items: _roles
-                        .map((role) => DropdownMenuItem(
-                              value: role,
-                              child: Text(role),
-                            ))
-                        .toList(),
+                    items: EmployeeRole.values.map((role) {
+                      return DropdownMenuItem<String>(
+                        value: role.name, // Convert enum to string
+                        child: Text(role.name),
+                      );
+                    }).toList(),
                     decoration: InputDecoration(
                       labelText: 'Role',
                       prefixIcon: const Icon(Icons.work_outline),
@@ -268,6 +271,7 @@ class EmployeeAddWidgetState extends State<EmployeeAddWidget> {
                     ),
                     style: theme.textTheme.bodyMedium,
                   ),
+
                   const SizedBox(height: 16),
                   Container(
                     padding:

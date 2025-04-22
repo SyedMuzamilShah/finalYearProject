@@ -1,228 +1,199 @@
 import { STATUS_CODES } from "../../constant.js";
-import { officeAdminModel } from "../Models/Admin.Model.js";
 import { organizationModel } from "../Models/Organization.Model.js";
 import { ErrorResponse } from "../Utils/Error.js";
 
-export const organizationIsRegisterd = async (dataObject) => {
+/**
+ * Checks if an organization is already registered
+ * @param {Object} dataObject - Contains email and optional organizationNumber
+ * @returns {Boolean} - True if organization exists, false otherwise
+ */
+export const organizationIsRegistered = async (dataObject) => {
     const { email, organizationNumber } = dataObject;
+    
     try {
-        const query = [{ email }]; // Always include email in the search criteria
-        console.log(organizationNumber)
+        // Build dynamic query
+        const queryConditions = [{ email }];
         if (organizationNumber) {
-            query.push({ uniqueName: organizationNumber }); // Add organizationNumber only if it exists
+            queryConditions.push({ uniqueName: organizationNumber });
         }
 
-        // Check if email or organizationNumber is already registered
         const existingOrganization = await organizationModel.findOne({
-            $or: query
+            $or: queryConditions
         }).lean();
 
-        if (existingOrganization){
-            return true;
-        }else {
-            return false;
-        }
-        // if (existingOrganization) {
-        //     throw new ErrorResponse(
-        //         STATUS_CODES.CONFLICT,
-        //         'Organization already registered'
-        //     );
-        // }
+        return !!existingOrganization;
         
     } catch (err) {
-        // console.log(err.message)
-        throw err
+        console.error("Organization check error:", err.message);
+        throw err;
     }
-}
+};
 
-
+/**
+ * Creates a new organization
+ * @param {Object} dataObject - Organization data including adminId
+ * @returns {Object} - Created organization data
+ */
 export const organizationCreateServices = async (dataObject) => {
-    console.log("Testing..... @gmail.com")
-    // get user data from user request
-    const { adminId, name, phoneNumber, address, website, email, organizationNumber } = dataObject
+    const { adminId, name, phoneNumber, address, website, email, organizationNumber } = dataObject;
+    
     try {
-
-        const query = [{ email }]; // Always include email in the search criteria
-
+        // Check for existing organization
+        const queryConditions = [{ email }];
         if (organizationNumber) {
-            query.push({ uniqueName: organizationNumber }); // Add organizationNumber only if it exists
+            queryConditions.push({ uniqueName: organizationNumber });
         }
 
-        // Check if email or organizationNumber is already registered
         const existingOrganization = await organizationModel.findOne({
-            $or: query
+            $or: queryConditions
         }).lean();
+
 
         if (existingOrganization) {
             throw new ErrorResponse(
                 STATUS_CODES.CONFLICT,
-                'Organization already registered'
+                'Organization already registered with this email or ID'
             );
         }
-        // Create a new user instance
+
+        console.log("Tstingfasfad")
+        console.log(adminId)
+        // Create new organization
         const organization = await organizationModel.create({
-            name: name,
-            email: email,
-            phoneNumber, phoneNumber,
-            website: website,
-            address: address,
+            name,
+            email,
+            phoneNumber,
+            website,
+            location : address,
             createdBy: adminId,
         });
 
+        // Remove version key from response
+        const organizationResponse = organization.toObject();
+        delete organizationResponse.__v;
 
-        const _organization = organization.toObject();
-        delete _organization.__v;
-
-        return _organization
+        return organizationResponse;
 
     } catch (err) {
-        throw err
+        console.error("Organization creation error:", err.message);
+        throw err;
     }
-}
+};
 
+/**
+ * Deletes an organization
+ * @param {Object} dataObject - Contains adminId and either id or organizationId
+ * @returns {Object} - Success status and deleted organization
+ */
 export const deleteOrganization = async (dataObject) => {
-
     const { adminId, id, organizationId } = dataObject;
 
     try {
-        // Construct query dynamically
-        let query = { createdBy: adminId };
-
+        // Build dynamic query
+        const query = { createdBy: adminId };
         if (organizationId) {
             query.organizationId = organizationId;
         } else if (id) {
             query._id = id;
         }
 
-        // Use constructed query for deletion
         const organization = await organizationModel.findOneAndDelete(query);
         
         if (!organization) {
             throw new ErrorResponse(
-                STATUS_CODES.BAD_REQUEST,
-                'No matching organization found'
+                STATUS_CODES.NOT_FOUND,
+                'No matching organization found for deletion'
             );
         }
 
-        return { success: true, organization };
+        return { 
+            success: true, 
+            organization: organization.toObject() 
+        };
     } catch (error) {
-        console.error("Error deleting organization:", error.message);
-        throw error
+        console.error("Organization deletion error:", error.message);
+        throw error;
     }
 };
 
-
+/**
+ * Retrieves organization(s) based on criteria
+ * @param {Object} dataObject - Contains adminId and optional filters
+ * @returns {Object} - Found organization(s)
+ */
 export const getAllOrganization = async (dataObject) => {
-    console.log("dataObject")
-    console.log(dataObject)
-
     const { adminId, id, organizationId } = dataObject;
 
     try {
-        // Dynamically construct the query
-        let query = { createdBy: adminId }; // Always include adminId
-
+        // Build dynamic query
+        const query = { createdBy: adminId };
         if (organizationId) {
             query.organizationId = organizationId;
         } else if (id) {
             query._id = id;
         }
-        // Fetch organization based on constructed query
-        const organization = await organizationModel.find(query);
-        // console.log(organization)
-        return { organization }
+
+        const organizations = await organizationModel.find(query).lean();
+        return { organizations };
+        
     } catch (error) {
-        if (error.name == 'CastError'){
+        if (error.name === 'CastError') {
             throw new ErrorResponse(
                 STATUS_CODES.BAD_REQUEST,
-                error.message
+                'Invalid organization identifier format'
             );
         }
+        console.error("Organization fetch error:", error.message);
         throw new ErrorResponse(
-            STATUS_CODES.BAD_REQUEST,
-            `"Error fetching organization:", ${error.message}`
+            STATUS_CODES.INTERNAL_SERVER_ERROR,
+            'Failed to retrieve organizations'
         );
     }
 };
 
+/**
+ * Updates an organization
+ * @param {Object} dataObject - Contains adminId, identifier, and update data
+ * @returns {Object} - Updated organization
+ */
+export const updateOrganization = async (dataObject) => {
+    const { adminId, id, organizationId, ...updateData } = dataObject;
 
-export const officeAdminLogOutServices = async (userId) => {
     try {
-        // Find the user by ID
-        const user = await officeAdminModel.findById(userId);
-        if (!user) {
+        // Build dynamic query
+        const query = { createdBy: adminId };
+        if (organizationId) {
+            query.organizationId = organizationId;
+        } else if (id) {
+            query._id = id;
+        }
+
+        const organization = await organizationModel.findOneAndUpdate(
+            query,
+            updateData,
+            { new: true, runValidators: true }
+        ).lean();
+
+        if (!organization) {
             throw new ErrorResponse(
                 STATUS_CODES.NOT_FOUND,
-                'User not found'
+                'No matching organization found for update'
             );
         }
 
-        // Remove the refresh token
-        user.refreshToken = undefined;
-        await user.save();
-
-        return true;
-    } catch (err) {
-        // Log the error for debugging
-        console.error('Logout service error:', err);
-
-        // Re-throw custom errors
-        if (err instanceof ErrorResponse) {
-            throw err;
-        }
-
-        // Throw a generic error for unexpected issues
-        throw new ErrorResponse(
-            STATUS_CODES.INTERNAL_SERVER_ERROR,
-            'Logout failed due to an unexpected error'
-        );
-    }
-};
-
-export const officeAdminChangePasswordServices = async (userId, oldPassword, newPassword) => {
-    try {
-        // Find the user by ID
-        const user = await officeAdminModel.findById(userId).select('+password');
-        if (!user) {
-            throw new ErrorResponse(
-                STATUS_CODES.NOT_FOUND,
-                'User not found'
-            );
-        }
-
-        // Validate the old password
-        const isPasswordValid = await user.isPasswordValid(oldPassword);
-        if (!isPasswordValid) {
+        return { organization };
+        
+    } catch (error) {
+        if (error.name === 'CastError') {
             throw new ErrorResponse(
                 STATUS_CODES.BAD_REQUEST,
-                'Old password is not valid'
+                'Invalid organization identifier format'
             );
         }
-
-        // Update the password
-        user.password = newPassword;
-        await user.save(); // This will trigger the pre-save hook to hash the password
-
-        // Prepare the response
-        const userResponse = user.toObject();
-        delete userResponse.password;
-        delete userResponse.__v;
-        delete userResponse.refreshToken;
-
-        return userResponse;
-    } catch (err) {
-        // Log the error for debugging
-        console.error('Change password service error:', err);
-
-        // Re-throw custom errors
-        if (err instanceof ErrorResponse) {
-            throw err;
-        }
-
-        // Throw a generic error for unexpected issues
+        console.error("Organization update error:", error.message);
         throw new ErrorResponse(
             STATUS_CODES.INTERNAL_SERVER_ERROR,
-            'Password change failed due to an unexpected error'
+            'Failed to update organization'
         );
     }
 };

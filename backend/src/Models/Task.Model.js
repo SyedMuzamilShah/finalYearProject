@@ -17,25 +17,25 @@ const taskSchema = new mongoose.Schema(
     organizationId: {
       type: mongoose.Types.ObjectId,
       ref: "organization",
-      required: true, // Ensure organizationId is provided
+      required: true,
     },
     adminId: {
       type: mongoose.Types.ObjectId,
       ref: "admin",
-      required: true, // Ensure adminId is provided
+      required: true,
     },
     title: {
       type: String,
-      required: true, // Ensure title is provided
-      trim: true, // Remove extra spaces
+      required: true,
+      trim: true,
     },
     description: {
       type: String,
-      trim: true, // Remove extra spaces
+      trim: true,
     },
     dueDate: {
-      type: Date, // Corrected from DataTime to Date
-      required: true, // Ensure dueDate is provided
+      type: Date,
+      required: true,
     },
     // address: {
     //   type: mongoose.Types.ObjectId,
@@ -43,7 +43,8 @@ const taskSchema = new mongoose.Schema(
     // },
     location: {
       type: { type: String, default: "Point" },
-      coordinates: [Number]  // [longitude, latitude]
+      coordinates: [Number],  // [longitude, latitude]
+      address : String
     },
 
     status: {

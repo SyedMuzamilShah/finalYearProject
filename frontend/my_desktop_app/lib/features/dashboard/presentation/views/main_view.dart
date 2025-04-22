@@ -28,9 +28,11 @@ class MyDashBoradView extends ConsumerWidget {
         loading: () => Center(
               child: MyLoadingWidget(),
             ),
-        error: (error, stack) => Center(
+        error: (error, stack){
+          return Center(
               child: Text(error.toString()),
-            ),
+            );
+        },
         data: (data) {
           if (data) {
             WidgetsBinding.instance.addPostFrameCallback((_) {

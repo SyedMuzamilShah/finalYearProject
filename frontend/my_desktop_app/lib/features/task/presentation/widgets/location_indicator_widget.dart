@@ -16,9 +16,9 @@ class LocationIndicator extends StatelessWidget {
         const Icon(Icons.location_on, size: 16, color: Colors.blue),
         const SizedBox(width: 4),
         Expanded(
-          // child: Text(
-          //   location.address ?? '${location.latitude.toStringAsFixed(4)}, ${location.longitude.toStringAsFixed(4)}',
-          child: Text('${location.latitude.toStringAsFixed(4)}, ${location.longitude.toStringAsFixed(4)}',
+          child: Text(
+            location.address ?? '${location.latitude.toStringAsFixed(4)}, ${location.longitude.toStringAsFixed(4)}',
+          // child: Text('${location.latitude.toStringAsFixed(4)}, ${location.longitude.toStringAsFixed(4)}',
             style: const TextStyle(fontSize: 12),
             overflow: TextOverflow.ellipsis,
           ),

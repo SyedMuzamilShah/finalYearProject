@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:my_desktop_app/core/provider/theme_provider.dart';
 
-class MySettingView extends StatefulWidget {
+class MySettingView extends ConsumerWidget {
   const MySettingView({super.key});
 
   @override
-  State<MySettingView> createState() => _MySettingViewState();
-}
-
-class _MySettingViewState extends State<MySettingView> {
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       body: ListView(
         padding: EdgeInsets.all(16),
@@ -61,6 +58,25 @@ class _MySettingViewState extends State<MySettingView> {
           ),
           Divider(),
 
+          ListTile(
+            leading: Icon(Icons.security),
+            title: Text('Dark mode'),
+            trailing: Switch(
+              inactiveTrackColor: Theme.of(context).secondaryHeaderColor,
+              activeColor: Theme.of(context).primaryColor,
+              
+              value:
+                  ref.watch(themeProvider) == ThemeMode.dark, // Example value
+              onChanged: (value) {
+                if (ref.watch(themeProvider) == ThemeMode.dark){
+                  ref.watch(themeProvider.notifier).state = ThemeMode.light;
+                }else{
+                  ref.watch(themeProvider.notifier).state = ThemeMode.dark;
+                }
+              },
+            ),
+          ),
+          Divider(),
           // Language and Region
           ListTile(
             leading: Icon(Icons.language),

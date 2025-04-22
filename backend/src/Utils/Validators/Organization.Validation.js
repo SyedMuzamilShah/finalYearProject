@@ -12,3 +12,5 @@ export const validateOrganizationRoutes = [
     body('address')
     .notEmpty().withMessage('address is Reqired'),
 ];
+
+export const validateOrganizationEditRoute = []
