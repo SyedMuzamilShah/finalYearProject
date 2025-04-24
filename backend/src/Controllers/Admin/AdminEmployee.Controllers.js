@@ -23,6 +23,7 @@ export const employeeAddControllerForAdmin = controllerHandler(async (req, res) 
 
         // Check if employee is already registered
         const existingUser = await employeeCreateServices.findExistingUser(req.body);
+        console.log(existingUser)
         if (existingUser) {
             throw new ErrorResponse(STATUS_CODES.CONFLICT, 'Employee already registered');
         }
@@ -139,8 +140,8 @@ export const employeeStatusChangeControllerForAdmin = controllerHandler(async (r
 
     const {user} = await employeeStatusChange(dataObject)
     // console.log(employees)
-    return res.status(STATUS_CODES.OK)
-        .json(new SuccessResponse(STATUS_CODES.OK, 'Employee Status Change successfully', {user : user}).toJson());
+    return res.status(STATUS_CODES.SUCCESS_NO_RESPONSE)
+        .json(new SuccessResponse(STATUS_CODES.SUCCESS_NO_RESPONSE, 'Employee Status Change successfully', {user : user}).toJson());
 })
 
 export const employeeRoleChangeControllerForAdmin = controllerHandler(async (req, res) => {
@@ -154,8 +155,8 @@ export const employeeRoleChangeControllerForAdmin = controllerHandler(async (req
 
     const {user} = await employeeRoleChange(dataObject)
     // console.log(employees)
-    return res.status(STATUS_CODES.OK)
-        .json(new SuccessResponse(STATUS_CODES.OK, 'Employee Status Change successfully', {user : user}).toJson());
+    return res.status(STATUS_CODES.SUCCESS_NO_RESPONSE)
+        .json(new SuccessResponse(STATUS_CODES.SUCCESS_NO_RESPONSE, 'Employee Status Change successfully', {user : user}).toJson());
 })
 
 export const employeeDeleteControllerForAdmin = controllerHandler(async (req, res) => {

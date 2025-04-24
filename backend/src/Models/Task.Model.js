@@ -55,7 +55,17 @@ const taskSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true, // Adds createdAt and updatedAt fields
+    timestamps: true,
+    toJSON : {
+      virtuals : true,
+      transform : function(doc, ret) {
+        delete ret.__v
+        delete ret.id
+        return ret
+      }
+      
+      
+    }
   }
 );
 

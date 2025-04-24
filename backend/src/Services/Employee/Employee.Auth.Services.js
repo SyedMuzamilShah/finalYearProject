@@ -1,3 +1,4 @@
+import { isValidObjectId } from "mongoose";
 import { STATUS_CODES } from "../../../constant.js";
 import { employeeModel, EmployeeStatus } from "../../Models/Employee.Model.js";
 import { organizationModel } from "../../Models/Organization.Model.js";
@@ -8,8 +9,14 @@ export const employeeCreateServices = {
     findExistingUser: async ({ userName, email }) => {
         return await employeeModel.findOne({ $or: [{ email }, { userName }] }).lean();
     },
-    finaOrganization: async ({ organizationId, id }) => {
-        return await organizationModel.findOne({ $or: [{ organizationId }, { _id: id }] })
+    finaOrganization: async ({ organizationId }) => {
+        let org;
+        if (isValidObjectId(organizationId)){
+            org = await organizationModel.findById(organizationId);
+        }else {
+            org = await organizationModel.findOne({ organizationId: organizationId });
+        }
+        return org
     },
     createEmployee: async (dataObject) => {
         const { adminId, userName, email, name, password, role, phoneNumber, organizationId, biometricToken, imageUrl } = dataObject;

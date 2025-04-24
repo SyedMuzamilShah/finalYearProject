@@ -1,6 +1,7 @@
 import { body, query } from 'express-validator';
 import { organizationModel } from '../../Models/Organization.Model.js';
 import { EmployeeRole, EmployeeStatus } from '../../Models/Employee.Model.js';
+import { isValidObjectId } from 'mongoose';
 
 /**
  * Employee Registration Validator
@@ -60,7 +61,12 @@ export const validateEmployeeRegisterRoutes = [
 ];
 
 async function checkOrganizationExists(orgId) {
-    const org = await organizationModel.findOne({ organizationId: orgId });
+    let org;
+    if (isValidObjectId(orgId)){
+        org = await organizationModel.findById(orgId);
+    }else {
+        org = await organizationModel.findOne({ organizationId: orgId });
+    }
     if (!org) throw new Error('Organization not found');
     return true;
 }
@@ -122,6 +128,10 @@ export const validateEmployeeForgetPasswordRoutes = [
  */
 
 export const validateEmployeeStatusChangeRoutes = [
+    body('employeeId')
+    .notEmpty()
+    .withMessage("Employee Id is required"),
+    
     body('status')
         .notEmpty().withMessage('Status is required')
         .custom((value) => {

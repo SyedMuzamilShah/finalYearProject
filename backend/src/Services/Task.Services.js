@@ -6,11 +6,14 @@ import { taskAssignmentModel } from "../Models/TaskAssignment.Model.js";
 import { ErrorResponse } from "../Utils/Error.js";
 import { faceVerification } from "../Utils/FaceBioHandler.js";
 import { getDistanceInMeters } from "../Utils/Distance_Calculator.js"
+import { isValidObjectId } from "mongoose";
 
 const handleDatabaseError = (error) => {
     console.error("Database error:", error.message);
     throw new ErrorResponse(500, error.message ?? "An unexpected database error occurred");
 };
+
+
 
 export const taskCreateServices = async (dataObject) => {
     try {
@@ -75,7 +78,7 @@ export const taskUpdateService = async (dataObject) => {
             throw new ErrorResponse(STATUS_CODES.NOT_FOUND, "Task not found");
         }
 
-        const allowedFields = ['name', 'description', 'status', 'dueDate'];
+        const allowedFields = ['title', 'name', 'description', 'status', 'dueDate', 'location'];
 
         for (const key of allowedFields) {
             if (dataObject[key] !== undefined) {
@@ -83,7 +86,7 @@ export const taskUpdateService = async (dataObject) => {
             }
         }
         await task.save();
-
+        console.log(task)
         return { task };
     } catch (err) {
         throw new ErrorResponse(STATUS_CODES.NOT_FOUND, err.message);
@@ -107,9 +110,10 @@ export const taskReadService = async () => {
 export const taskDeleteService = async (dataObject) => {
     try {
         const { taskId } = dataObject;
+        
         const response = await taskModel.findByIdAndDelete(taskId);
         // taskModel.deleteMany
-
+        
         // if task is deleted then delete all the task from task assignment model
         // if the task is deleted then it will be deleted from that corresponding assignment employees
         await taskAssignmentModel.deleteMany({ taskId: taskId });
@@ -117,7 +121,7 @@ export const taskDeleteService = async (dataObject) => {
         if (!response) throw new ErrorResponse(STATUS_CODES.NOT_FOUND, "Task not found");
         return true;
     } catch (err) {
-        throw new ErrorResponse(500, 'Unexpected error occurred');
+        throw new ErrorResponse(500, err.message ?? 'Unexpected error occurred');
     }
 };
 
@@ -130,12 +134,15 @@ export const taskAssignService = async (dataObject) => {
     try {
         const task = await taskModel.findById(taskId);
         if (!task) throw new ErrorResponse(404, "Task not found");
-
+        
         const alreadyAssigned = [];
         const newAssignments = [];
 
         for (const employeeId of employeesId) {
-            const employeeExists = await employeeModel.findById(employeeId);
+            console.log("organization id")
+            console.log(employeeId)
+            console.log(task.organizationId)
+            const employeeExists = await employeeModel.findOne({_id: employeeId, organizationId : task.organizationId});
             if (!employeeExists) {
                 throw new ErrorResponse(404, `Employee with ID ${employeeId} not found`);
             }
@@ -256,40 +263,49 @@ export const taskStatusChangeServices = async (dataObject) => {
     }
 };
 
+
 export const getTasksWithAssignments = async (dataObject) => {
     const { adminId, organizationId, status, search } = dataObject;
 
     try {
-        let query = {};
-        if (adminId) query.adminId = adminId
-        if (organizationId) query.organizationId = organizationId;
+        const organizationExists = await taskModel.findOne({ organizationId });
+        if (!organizationExists) {
+            throw new ErrorResponse(STATUS_CODES.NOT_FOUND, "Organization not found");
+        }
+
+        let query = {
+            organizationId,
+            adminId
+        };
+
         if (status && status.toUpperCase() !== "ALL") {
             query.status = status.toUpperCase();
         }
+
         if (search) {
             query.$or = [
-                { title: { $regex: search, $options: 'i' } },
-                { description: { $regex: search, $options: 'i' } },
+                { title: { $regex: search, $options: "i" } },
+                { description: { $regex: search, $options: "i" } }
             ];
         }
-        console.log(query)
+
         const tasks = await taskModel.find(query).lean();
         const taskIds = tasks.map((task) => task._id);
 
         const assignments = await taskAssignmentModel.find({
-            taskId: { $in: taskIds },
+            taskId: { $in: taskIds }
         }).lean();
 
         const taskAssignmentsMap = assignments.reduce((acc, assignment) => {
-            const tId = assignment.taskId.toString();
-            if (!acc[tId]) acc[tId] = [];
-            acc[tId].push(assignment.employeeId);
+            const taskIdStr = assignment.taskId.toString();
+            if (!acc[taskIdStr]) acc[taskIdStr] = [];
+            acc[taskIdStr].push(assignment.employeeId);
             return acc;
         }, {});
 
         const tasksWithAssignment = tasks.map((task) => ({
             ...task,
-            assignment: taskAssignmentsMap[task._id.toString()] || [],
+            assignment: taskAssignmentsMap[task._id.toString()] || []
         }));
 
         return { tasks: tasksWithAssignment };
@@ -297,12 +313,20 @@ export const getTasksWithAssignments = async (dataObject) => {
         console.error("Error fetching tasks:", error);
 
         if (error.name === "CastError") {
-            throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, `Invalid ID format: ${error.message}`);
+            throw new ErrorResponse(
+                STATUS_CODES.BAD_REQUEST,
+                `Invalid ID format: ${error.message}`
+            );
         }
 
-        throw new ErrorResponse(STATUS_CODES.INTERNAL_SERVER_ERROR, `Error fetching tasks: ${error.message}`);
+        throw new ErrorResponse(
+            error.statusCode ??  STATUS_CODES.INTERNAL_SERVER_ERROR,
+            `${error.message}`
+        );
     }
 };
+
+
 
 // Define this limit in meters (e.g., 1000 for 1 km)
 const MAX_DISTANCE_METERS = 1000;

@@ -44,9 +44,9 @@ export const adminLogoutController = controllerHandler(async (req, res) => {
 
   if (logout) {
     // Return success response
-    return res.status(STATUS_CODES.OK).json(
+    return res.status(STATUS_CODES.SUCCESS_NO_RESPONSE).json(
       new SuccessResponse(
-        STATUS_CODES.OK,
+        STATUS_CODES.SUCCESS_NO_RESPONSE,
         'Logout successful',
         undefined
       ).toJson()
@@ -57,16 +57,6 @@ export const adminLogoutController = controllerHandler(async (req, res) => {
 export const adminForgotPasswordController = controllerHandler(async (req, res) => {});
 
 export const adminChangePasswordController = controllerHandler(async (req, res) => {
-  // Validate the request
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    throw new ErrorResponse(
-      STATUS_CODES.BAD_REQUEST,
-      'Validation failed',
-      errors.array()
-    );
-  }
-
   // Get data from frontend
   const userId = req.user._id;
   const dataObject = { userId, ...req.body }
@@ -76,11 +66,11 @@ export const adminChangePasswordController = controllerHandler(async (req, res) 
     const {user} = await adminChangePasswordService(dataObject);
 
     // Return success response
-    return res.status(STATUS_CODES.OK).json(
+    return res.status(STATUS_CODES.SUCCESS_NO_RESPONSE).json(
       new SuccessResponse(
-        STATUS_CODES.OK,
+        STATUS_CODES.SUCCESS_NO_RESPONSE,
         'Password changed successfully',
-        { user }
+        null
       ).toJson()
     );
   } catch (err) {

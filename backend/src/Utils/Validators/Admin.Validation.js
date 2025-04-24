@@ -32,9 +32,12 @@ export const validateAdminLoginRoutes = [
 ];
 
 export const validateAdminChangePasswordRoutes = [
-    body('name').notEmpty().withMessage('Name is required'),
-    body('email').isEmail().withMessage('Invalid email'),
-    body('password').notEmpty(),
+    body("oldPassword")
+    .notEmpty()
+    .withMessage("old password is required"),
+    body("newPassword")
+    .notEmpty()
+    .withMessage("old password is required"),
 ];
 
 export const validateAdminRefreshTokenRoutes = [
