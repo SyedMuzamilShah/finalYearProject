@@ -45,6 +45,7 @@ export const allowImageForProcessService = async (dataObject) => {
         if (user.imageUrl.includes('localhost')) {
 
             // Process local image
+            // create the path
             const imageName = path.basename(user.imageUrl);
             const imagePath = path.join(process.cwd(), 'public', 'temp', imageName);
 

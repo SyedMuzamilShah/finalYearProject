@@ -16,13 +16,13 @@ export const employeeAddControllerForAdmin = controllerHandler(async (req, res) 
     
     try {
         // Check if employee is already registered
-        const organizationExist = await employeeCreateServices.finaOrganization(req.body);
+        const organizationExist = await employeeCreateServices.finaOrganization(data);
         if (!organizationExist) {
             throw new ErrorResponse(STATUS_CODES.NOT_FOUND, 'Organization not found');
         }
 
         // Check if employee is already registered
-        const existingUser = await employeeCreateServices.findExistingUser(req.body);
+        const existingUser = await employeeCreateServices.findExistingUser(data);
         console.log(existingUser)
         if (existingUser) {
             throw new ErrorResponse(STATUS_CODES.CONFLICT, 'Employee already registered');
@@ -94,6 +94,7 @@ export const employeeGetControllerForAdmin = controllerHandler(async (req, res) 
         ...req.query,
         adminId
     }
+    
 
     const {user} = await getEmployeeServices(dataObject)
     return res.status(STATUS_CODES.OK)

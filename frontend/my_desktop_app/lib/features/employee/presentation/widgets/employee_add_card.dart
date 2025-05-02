@@ -19,7 +19,7 @@ class EmployeeAddWidget extends StatefulWidget {
 
 class EmployeeAddWidgetState extends State<EmployeeAddWidget> {
   final _formKey = GlobalKey<FormState>();
-  final List<String> _roles = ['Servant', 'Manager', 'Security'];
+  // final List<String> _roles = ['Servant', 'Manager', 'Security'];
   final List<String> _countryCodes = ['+1', '+44', '+91', '+86', '+33'];
 
   String? _selectedCountryCode = '+91';

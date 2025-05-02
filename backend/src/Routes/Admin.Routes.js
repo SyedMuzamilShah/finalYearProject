@@ -4,13 +4,16 @@ import { adminJwtDecode } from "../Middlewares/Admin.Middleware.js";
 import { upload } from "../Middlewares/Multer.Middleware.js";
 import { validateHandler } from "../Utils/ValidateHandler.js"
 import { validateOrganizationEditRoute, validateOrganizationRoutes } from "../Utils/Validators/Organization.Validation.js";
-import { validateAdminChangePasswordRoutes, validateAdminForgetPasswordRoutes, validateAdminLoginRoutes, validateAdminRefreshTokenRoutes, validateAdminRegisterRoutes } from "../Utils/Validators/Admin.Validation.js";
+import { adminGetEmployeeStatisticsRoute, adminOrganizationTaskStatisticsRoute } from "../Utils/Validators/Admin.Statistics.Validation.js";
+import { adminGetEmployeeRoleStatisticsController, adminOrganizationTaskStatisticsController } from "../Controllers/Admin/AdminStatistics.Controller.js";
 import { adminCreateOrganization, adminDeleteOrganization, adminEditOrganizationController, adminGetAllOrganization } from "../Controllers/Admin/Organization.Controllers.js"
+import { validateAdminChangePasswordRoutes, validateAdminForgetPasswordRoutes, validateAdminLoginRoutes, validateAdminRefreshTokenRoutes, validateAdminRegisterRoutes } from "../Utils/Validators/Admin.Validation.js";
 import { taskAssignController, taskCreateController, taskDeleteController, taskReadController, taskStatusChangeController, taskUpdateController, taskVerifiedController } from "../Controllers/Admin/Task.Controllers.js";
 import { adminRegisterController, adminLoginController, adminProfileController, adminForgotPasswordController, adminChangePasswordController, adminRefreshToken, adminLogoutController } from "../Controllers/Admin/Admin.Controllers.js";
 import { validateTaskAssignRoute, validateTaskCreationRoute, validateTaskDeleteRoute, validateTaskGetRoute, validateTaskStatusChangeRoute, validateTaskUpdateRoute, validateTaskVerifiedRoute } from "../Utils/Validators/Task.Validation.js";
 import { validateEmployeeAllowPictureRoutes, validateEmployeeDeleteRoutes, validateEmployeeEditRoutes, validateEmployeeGetRoutes, validateEmployeeRegisterRoutes, validateEmployeeRoleChangeRoute, validateEmployeeStatusChangeRoutes } from "../Utils/Validators/Employee.Validation.js";
 import { employeeAddControllerForAdmin, employeeBasicUpdateControllerForAdmin, employeeDeleteControllerForAdmin, employeeGetControllerForAdmin, employeeImageAllowControllerForAdmin, employeeRoleChangeControllerForAdmin, employeeStatusChangeControllerForAdmin, employeeUpdateToGetherControllerForAdmin } from "../Controllers/Admin/AdminEmployee.Controllers.js"
+
 const adminRoutes = Router();
 // ----------------------- Admin Authentication Routes -----------------------
 
@@ -246,5 +249,26 @@ adminRoutes.route('/task/verified')
  */
 adminRoutes.route('/task/status-change')
   .patch(adminJwtDecode, validateTaskStatusChangeRoute, validateHandler, taskStatusChangeController);
+
+
+
+
+// ----------------------- Statistics -----------------------
+/**
+ * @headers : Requires token
+ * @body : Required [organizationId], optional [year]
+ * @returns: 200 OK with task-statistics [month, count]
+ */
+adminRoutes.route('/statistics/task')
+  .get(adminJwtDecode, adminOrganizationTaskStatisticsRoute, validateHandler, adminOrganizationTaskStatisticsController);
+
+  /**
+ * @headers : Requires token
+ * @body : Required [organizationId], optional [year]
+ * @returns: 200 OK with task-statistics [role, count]
+ */
+adminRoutes.route('/statistics/employee-role')
+  // .get(adminJwtDecode, adminGetEmployeeStatisticsRoute, validateHandler, adminGetEmployeeRoleStatisticsController);
+  .get(adminGetEmployeeRoleStatisticsController);
 
 export { adminRoutes }

@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 
+// ignore: must_be_immutable
 class EmployeeStatusBadge extends StatelessWidget {
   late Color? backgroundColor;
   late Color? textColor;
   final String status;
-  EmployeeStatusBadge({super.key, 
-  required this.status,
-  this.backgroundColor, 
-  this.textColor, 
+  EmployeeStatusBadge({
+    super.key,
+    required this.status,
+    this.backgroundColor,
+    this.textColor,
   });
 
   @override
@@ -33,7 +35,7 @@ class EmployeeStatusBadge extends StatelessWidget {
         backgroundColor = Colors.grey[100]!;
         textColor = Colors.grey[800]!;
     }
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(

@@ -2,38 +2,38 @@ import { STATUS_CODES } from "../../constant.js";
 import { employeeModel } from "../Models/Employee.Model.js";
 import { organizationModel } from "../Models/Organization.Model.js";
 import { taskModel } from "../Models/Task.Model.js";
-import { taskAssignmentModel } from "../Models/TaskAssignment.Model.js";
+import { taskAssignmentModel, taskAssignmentStatus, taskAssignmentValidateMethod } from "../Models/TaskAssignment.Model.js";
 import { ErrorResponse } from "../Utils/Error.js";
 import { faceVerification } from "../Utils/FaceBioHandler.js";
-import { getDistanceInMeters } from "../Utils/Distance_Calculator.js"
+import { calculateDistance, getDistanceInMeters } from "../Utils/Distance_Calculator.js"
 import { isValidObjectId } from "mongoose";
-
+import path from "path"
+import { handleFaceVerification, setSubmissionInfo, validateEmployee, validateTask, validateTaskAssignment, verifyLocation } from "./TaskFunction/TaskCompletion.Method.js";
 const handleDatabaseError = (error) => {
     console.error("Database error:", error.message);
     throw new ErrorResponse(500, error.message ?? "An unexpected database error occurred");
 };
 
-
-
 export const taskCreateServices = async (dataObject) => {
     try {
         const {
+            adminId,
             title,
             description,
             organizationId,
-            adminId,
+            aroundDistanceMeter,
             location,
             dueDate,
         } = dataObject;
 
-
-        const query = isValidObjectId(organizationId)
-            ? { $or: [{ _id: organizationId }, { organizationId }] }
-            : { organizationId };
+        let query
+        query = isValidObjectId(organizationId)
+            ? { _id: organizationId, createdBy: adminId }
+            : { organizationId, createdBy: adminId };
 
         // 🔍 Check if organization exists
         const org = await organizationModel.findOne(query);
-        
+
         if (!org) throw new ErrorResponse(400, 'Organization not found');
 
         // ✅ Check for duplicate task
@@ -59,6 +59,9 @@ export const taskCreateServices = async (dataObject) => {
 
         if (location) {
             taskData.location = location;
+        }
+        if (aroundDistanceMeter) {
+            taskData.aroundDistanceMeter = aroundDistanceMeter;
         }
 
         const newTask = new taskModel(taskData);
@@ -110,10 +113,10 @@ export const taskReadService = async () => {
 export const taskDeleteService = async (dataObject) => {
     try {
         const { taskId } = dataObject;
-        
+
         const response = await taskModel.findByIdAndDelete(taskId);
         // taskModel.deleteMany
-        
+
         // if task is deleted then delete all the task from task assignment model
         // if the task is deleted then it will be deleted from that corresponding assignment employees
         await taskAssignmentModel.deleteMany({ taskId: taskId });
@@ -132,17 +135,21 @@ export const taskAssignService = async (dataObject) => {
     }
 
     try {
+        console.log(dataObject)
         const task = await taskModel.findById(taskId);
         if (!task) throw new ErrorResponse(404, "Task not found");
-        
+
         const alreadyAssigned = [];
         const newAssignments = [];
 
-        for (const employeeId of employeesId) {
-            console.log("organization id")
-            console.log(employeeId)
-            console.log(task.organizationId)
-            const employeeExists = await employeeModel.findOne({_id: employeeId, organizationId : task.organizationId});
+        for (const employee of employeesId) {
+            const { employeeId, pictureAllowed, faceVerification } = employee;
+
+            const employeeExists = await employeeModel.findOne({
+                _id: employeeId,
+                organizationId: task.organizationId,
+            });
+
             if (!employeeExists) {
                 throw new ErrorResponse(404, `Employee with ID ${employeeId} not found`);
             }
@@ -158,10 +165,13 @@ export const taskAssignService = async (dataObject) => {
                 employeeId,
                 taskId,
                 deadline: deadline ?? task.dueDate,
+                allowPicture: pictureAllowed,
+                faceVerification : faceVerification
             });
 
             newAssignments.push(assignment);
         }
+
 
         if (newAssignments.length > 0) {
             task.status = "ASSIGNED";
@@ -266,12 +276,17 @@ export const taskStatusChangeServices = async (dataObject) => {
 
 export const getTasksWithAssignments = async (dataObject) => {
     const { adminId, organizationId, status, search } = dataObject;
-
+    console.log(dataObject)
     try {
-        const organizationExists = await taskModel.findOne({ organizationId });
-        if (!organizationExists) {
+        const isorganizationExistsOrg = await organizationModel.findById({ _id: organizationId, createdBy: adminId })
+        if (!isorganizationExistsOrg) {
             throw new ErrorResponse(STATUS_CODES.NOT_FOUND, "Organization not found");
         }
+
+        // const taskExists = await taskModel.findOne({ organizationId, adminId : adminId });
+        // if (!taskExists) {
+        //     throw new ErrorResponse(STATUS_CODES.NOT_FOUND, "task not found");
+        // }
 
         let query = {
             organizationId,
@@ -320,75 +335,43 @@ export const getTasksWithAssignments = async (dataObject) => {
         }
 
         throw new ErrorResponse(
-            error.statusCode ??  STATUS_CODES.INTERNAL_SERVER_ERROR,
+            error.statusCode ?? STATUS_CODES.INTERNAL_SERVER_ERROR,
             `${error.message}`
         );
     }
 };
 
-
-
-// Define this limit in meters (e.g., 1000 for 1 km)
-const MAX_DISTANCE_METERS = 1000;
-
-
-
-
-// That will called by employee
 export const taskCompleteService = async (dataObject) => {
-    const { employeeId, imageUrl, lat, lng, taskId, organizationId } = dataObject;
+    const { employeeId, imageUrl, location, organizationId, taskAssignmentId } = dataObject;
 
-    // 1. Get the Task
-    const task = await taskModel.findById(taskId);
-    if (!task) throw new ErrorResponse(404, "Task not found");
-
-    // 2. Get Task Assignment
-    const assignment = await taskAssignmentModel.findOne({ taskId, employeeId });
-    if (!assignment) throw new ErrorResponse(403, "Task not assigned to this employee");
-
-    const employee = await employeeModel.findById(employeeId);
-
-    // 3. Face Verification
-    // const registeredFaceToken = assignment.faceToken;
-    const registeredFaceToken = employee.biometricToken;
-    if (!registeredFaceToken) throw new ErrorResponse(400, "No registered face for verification");
-
-    const faceVerificationResult = await faceVerification(registeredFaceToken, imageUrl);
-    const isSamePerson = faceVerificationResult.confidence > 80; // You can adjust the confidence threshold
-
-    if (!isSamePerson) {
-        throw new ErrorResponse(401, "Face does not match the registered identity.");
+    // 1. Validate task assignment
+    const taskAssignment = await validateTaskAssignment(employeeId, taskAssignmentId);
+    
+    // 2. Validate employee
+    const employee = await validateEmployee(employeeId);
+    
+    // 3. Get and validate task details
+    const task = await validateTask(taskAssignment.taskId);
+    
+    // 4. Set submission info
+    const { isLate } = setSubmissionInfo(taskAssignment, task.deadline);
+    
+    // 5. Verify location
+    await verifyLocation(task.location, location, task.aroundDistanceMeter);
+    
+    // 6. Handle face verification if required
+    if (taskAssignment.faceVerification) {
+        return await handleFaceVerification(taskAssignment, employee, imageUrl, isLate);
     }
 
-    // 4. Location Verification
-    const taskCoordinates = task.location?.coordinates; // Assuming [lng, lat] format (GeoJSON)
-
-    let isLocationVerified = false;
-    if (taskCoordinates && lat && lng) {
-        const taskLat = taskCoordinates[1];
-        const taskLng = taskCoordinates[0];
-        const distance = getDistanceInMeters(taskLat, taskLng, lat, lng);
-
-        if (distance <= MAX_DISTANCE_METERS) {
-            isLocationVerified = true;
-        }
-    }
-
-    // 5. Check if admin allows completion from wrong location
-    const allowOutsideCompletion = task.allowOutsideLocation || false; // Boolean field in task model
-
-    if (!isLocationVerified && !allowOutsideCompletion) {
-        throw new ErrorResponse(403, "Location is not within the allowed area for this task.");
-    }
-
-    // 6. Update Task and Assignment
-    task.status = "COMPLETED";
-    await task.save();
-
-    assignment.completedAt = new Date();
-    assignment.imageUrl = imageUrl;
-    assignment.isLocationVerified = isLocationVerified;
-    await assignment.save();
-
-    return { task, assignment };
+    
+    // 7. If no face verification required, mark as verified
+    taskAssignment.status = taskAssignmentStatus.VERIFIED;
+    taskAssignment.validateMethod = taskAssignmentValidateMethod.AUTO;
+    
+    await taskAssignment.save();
+    return {
+        method: taskAssignment.validateMethod,
+        taskAssignment: taskAssignment
+    };
 };

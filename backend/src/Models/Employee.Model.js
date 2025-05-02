@@ -20,7 +20,7 @@ const EmployeeRole = Object.freeze({
 
 // Constants for token expiration
 const TOKEN_EXPIRATION = {
-  ACCESS: process.env.ACCESS_TOKEN_SECRET_TIME || '15m',
+  ACCESS: process.env.ACCESS_TOKEN_SECRET_TIME || '1hr',
   REFRESH: process.env.REFRESH_TOKEN_SECRET_TIME || '7d'
 };
 

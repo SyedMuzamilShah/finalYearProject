@@ -9,13 +9,7 @@ import { employeeImageUploadServices } from "../../Services/Employee/Employee.Se
 import { employeeCreateServices, employeeLoginServices, employeeLogOutServices } from "../../Services/Employee/Employee.Auth.Services.js";
 
 export const employeeRegisterController = controllerHandler(async (req, res) => {
-    // Validate the request
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        console.log(errors);
-        throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, 'Validation failed', errors.array());
-    }
-
+  
     let imagePath = req.file?.path;
     let imageUrl, biometricToken;
     let data = req.body;
@@ -23,6 +17,7 @@ export const employeeRegisterController = controllerHandler(async (req, res) => 
     try {
         // Check if employee is already registered
         const organizationExist = await employeeCreateServices.finaOrganization(req.body);
+        console.log(organizationExist)
         if (!organizationExist) {
             console.log("Organization not found");
             throw new ErrorResponse(STATUS_CODES.NOT_FOUND, 'Organization not found');

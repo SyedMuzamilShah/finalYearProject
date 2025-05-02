@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:my_desktop_app/core/routes/routes.dart';
 import 'package:my_desktop_app/core/widgets/loading_widget.dart';
+import 'package:my_desktop_app/core/widgets/my_dialog_box.dart';
 import 'package:my_desktop_app/core/widgets/my_drawer.dart';
 import 'package:my_desktop_app/features/auth/presentation/providers/basic_auth_provider.dart';
 import 'package:my_desktop_app/features/dashboard/presentation/providers/user_profile_provider.dart';
@@ -39,7 +40,7 @@ class MyTopBarWidget extends ConsumerWidget {
                 ?.copyWith(color: Colors.red),
           ),
         ),
-
+    
         // Right Side
         Row(
           children: [
@@ -54,7 +55,7 @@ class MyTopBarWidget extends ConsumerWidget {
               error: (_, __) => const CircleAvatar(child: Icon(Icons.error)),
             ),
             const SizedBox(width: 10),
-
+    
             // Dropdown Button
             PopupMenuButton<String>(
               // icon: const Icon(CupertinoIcons.square_arrow_down, size: 20),
@@ -68,7 +69,9 @@ class MyTopBarWidget extends ConsumerWidget {
                       MaterialPageRoute(
                           builder: (context) => const MyDrawerWidget()));
                 } else if (value == 'Logout') {
+                  showMyDialog(context, MyLoadingWidget(), true);
                   final response = await ref.read(basicAuthProvider.notifier).logout();
+                  Navigator.pop(context);
                   if (response || !response) {
                     // ignore: use_build_context_synchronously
                     ScaffoldMessenger.of(context)

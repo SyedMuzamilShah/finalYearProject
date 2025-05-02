@@ -62,9 +62,9 @@ export const validateEmployeeRegisterRoutes = [
 
 async function checkOrganizationExists(orgId) {
     let org;
-    if (isValidObjectId(orgId)){
+    if (isValidObjectId(orgId)) {
         org = await organizationModel.findById(orgId);
-    }else {
+    } else {
         org = await organizationModel.findOne({ organizationId: orgId });
     }
     if (!org) throw new Error('Organization not found');
@@ -129,9 +129,9 @@ export const validateEmployeeForgetPasswordRoutes = [
 
 export const validateEmployeeStatusChangeRoutes = [
     body('employeeId')
-    .notEmpty()
-    .withMessage("Employee Id is required"),
-    
+        .notEmpty().withMessage('Employee ID is required')
+        .isMongoId().withMessage('Invalid Employee ID format'),
+
     body('status')
         .notEmpty().withMessage('Status is required')
         .custom((value) => {
@@ -141,10 +141,6 @@ export const validateEmployeeStatusChangeRoutes = [
             }
             return true;
         }),
-
-    body('employeeId')
-        .notEmpty().withMessage('Employee ID is required')
-        .isMongoId().withMessage('Invalid Employee ID format')
 ];
 
 /**
@@ -196,7 +192,7 @@ export const validateEmployeeEditRoutes = [
         .optional()
         .isBoolean()
         .withMessage("UploadNewImage must be boolean value"),
-        
+
     body('phoneNumber')
         .optional()
         .trim()
@@ -282,4 +278,41 @@ export const validateEmployeeRoleChangeRoute = [
 
 
 
-export const validateEmployeeCompleteTaskRoute = []
+export const validateEmployeeCompleteTaskRoute = [
+    body("taskAssignmentId")
+        .notEmpty()
+        .withMessage("taskAssignmentId is required")
+        .bail()
+        .isMongoId()
+        .withMessage("taskAssignmentId is not valid formate"),
+
+    body("location")
+        .notEmpty()
+        .withMessage("Location is required")
+        .bail()
+        .custom((value) => {
+            console.log(value)
+            if (typeof value !== 'object' || value.type !== 'Point' || !Array.isArray(value.coordinates)) {
+                throw new Error("Location must be a GeoJSON Point with coordinates");
+            }
+
+            const [longitude, latitude] = value.coordinates;
+
+            if (typeof longitude !== 'number' || typeof latitude !== 'number') {
+                throw new Error("Coordinates must be numbers");
+            }
+
+            if (longitude < -180 || longitude > 180) {
+                throw new Error("Longitude must be between -180 and 180");
+            }
+
+            if (latitude < -90 || latitude > 90) {
+                throw new Error("Latitude must be between -90 and 90");
+            }
+
+            return true;
+        })
+]
+
+
+export const validateEmployeeAssignTaskReadRoute = []

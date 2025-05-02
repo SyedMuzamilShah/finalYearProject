@@ -1,5 +1,7 @@
+import { isValidObjectId } from "mongoose";
 import { STATUS_CODES } from "../../../constant.js";
 import { employeeModel } from "../../Models/Employee.Model.js";
+import { organizationModel } from "../../Models/Organization.Model.js";
 import { ErrorResponse } from "../../Utils/Error.js";
 
 
@@ -136,6 +138,12 @@ export const employeeStatusChange = async (dataObject) => {
         throw new ErrorResponse(STATUS_CODES.NOT_FOUND, 'Employee not found');
     }
 
+    const isOrg = await organizationModel.findOne({organizationId : employee.organizationId, createdBy : adminId})
+
+    if (!isOrg){
+        throw new ErrorResponse(STATUS_CODES.NOT_FOUND, 'Employee Is not registerd');
+    }
+
     employee.status = status.toUpperCase();
     await employee.save();
     return { user: employee };
@@ -147,6 +155,17 @@ export const employeeRoleChange = async (dataObject) => {
     const employee = await employeeModel.findById(employeeId);
     if (!employee) {
         throw new ErrorResponse(STATUS_CODES.NOT_FOUND, 'Employee not found');
+    }
+
+    let isOrg;
+    if (isValidObjectId(employee.organizationId)){
+        isOrg = await organizationModel.findOne({_id : employee.organizationId, createdBy : adminId})
+    }else {
+        isOrg = await organizationModel.findOne({organizationId : employee.organizationId, createdBy : adminId})
+    }
+    
+    if (!isOrg){
+        throw new ErrorResponse(STATUS_CODES.NOT_FOUND, 'Employee Is not registerd');
     }
 
     employee.role = role.toUpperCase();

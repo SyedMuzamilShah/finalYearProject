@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:my_desktop_app/features/overview/presentation/widgets/line_chart_widget.dart';
+import 'package:my_desktop_app/features/overview/presentation/widgets/map_widget.dart';
 import 'package:my_desktop_app/features/overview/presentation/widgets/pie_chart_widget.dart';
 import 'package:my_desktop_app/features/overview/presentation/widgets/table_widget.dart';
 
@@ -28,13 +29,13 @@ class _OverViewState extends State<OverView> {
       width: double.infinity,
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHigh,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            // color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 2,
-            offset: const Offset(0, 2),
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+            spreadRadius: 0.2,
+            blurRadius: 0,
+            offset: const Offset(0, 0),
           ),
         ],
       ),
@@ -119,18 +120,18 @@ class _OverViewState extends State<OverView> {
                   ],
                 ),
                 const SizedBox(height: 5),
-                // MapWidget(primaryColor: Colors.blue)
-                Container(
-                  width: double.infinity,
-                  height: 250,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.secondary,
-                    borderRadius: BorderRadius.circular(12)
-                  ),
-                  child: const Center(
-                    child: Text('Map Placeholder'),
-                  ),
-                )
+                MapWidget(primaryColor: Colors.blue),
+                // Container(
+                //   width: double.infinity,
+                //   height: 250,
+                //   decoration: BoxDecoration(
+                //     color: Theme.of(context).colorScheme.secondary,
+                //     borderRadius: BorderRadius.circular(12)
+                //   ),
+                //   child: const Center(
+                //     child: Text('Map Placeholder'),
+                //   ),
+                // )
               ],
             ),
           ),
@@ -151,20 +152,19 @@ class _OverViewState extends State<OverView> {
                 )
               : Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: 10,
                   children: [
                     Expanded(
                       flex: 3,
                       child: _buildCard(
-                        // child: LineChartWidget(primaryColor: primaryColor),
                         child: LineChartWidget(primaryColor: Theme.of(context).colorScheme.primary),
                       ),
                     ),
-                    const SizedBox(width: 16),
+
                     Expanded(
                       flex: 2,
                       child: _buildCard(
                         child: PieChartWidget(
-                          // primaryColor: primaryColor,
                           primaryColor: Theme.of(context).colorScheme.primary,
                         ),
                       ),

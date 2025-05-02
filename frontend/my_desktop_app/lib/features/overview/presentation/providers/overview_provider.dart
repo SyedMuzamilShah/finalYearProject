@@ -1,3 +1,58 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:my_desktop_app/core/services/api_services.dart';
+import 'package:my_desktop_app/features/organization/presentation/providers/organization_provider.dart';
+import 'package:my_desktop_app/features/overview/data/datasources/statistics_datasources.dart';
+import 'package:my_desktop_app/features/overview/data/models/request/employee_role_statistics.dart';
+import 'package:my_desktop_app/features/overview/data/models/request/task_statistics.dart';
+import 'package:my_desktop_app/features/overview/data/repositories/statistics_repo_impl.dart';
+import 'package:my_desktop_app/features/overview/domain/usecases/overview_usecase.dart';
+
+final loadTaskStatisticsProvider = FutureProvider.family.autoDispose((ref, params) async {
+  final String? organizationId =
+      ref.read(organizationProvider).selectedOrganization?.id;
+
+  StatisticsUseCase useCase = StatisticsUseCase(StatisticsRepoImpl(
+      StatisticsRemoteDataSourceImpl(apiServices: ApiServices())));
+
+  if (organizationId == null) {
+    throw Exception('No organization selected');
+  }
+
+  TaskStatisticsParams params =
+      TaskStatisticsParams(organizationId: organizationId);
+  // Call your repository/API
+  final taskStatistics = await useCase.getTaskStatistics(params);
+  return taskStatistics.fold(
+      (err) => throw Exception(err.message), (succ) => succ);
+});
+
+final loadEmployeeRollStatisticsProvider =
+    FutureProvider.family.autoDispose((ref, params) async {
+  final String? organizationId =
+      ref.read(organizationProvider).selectedOrganization?.id;
+
+  StatisticsUseCase useCase = StatisticsUseCase(StatisticsRepoImpl(
+      StatisticsRemoteDataSourceImpl(apiServices: ApiServices())));
+
+  if (organizationId == null) {
+    throw Exception('No organization selected');
+  }
+
+  EmployeeRoleStatisticsParams params =
+      EmployeeRoleStatisticsParams(organizationId: organizationId);
+  // Call your repository/API
+  final taskStatistics = await useCase.getEmployeeRoleStatistics(params);
+  return taskStatistics.fold(
+      (err) => throw Exception(err.message), (succ) => succ);
+});
+
+
+
+
+
+
+
+
 // Assuming OverViewData is defined
 
 // class OverViewNotifier extends StateNotifier<AsyncValue<OverViewData>> {

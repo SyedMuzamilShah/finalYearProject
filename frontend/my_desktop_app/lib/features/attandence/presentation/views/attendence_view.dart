@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:my_desktop_app/core/widgets/loading_widget.dart';
 import 'package:my_desktop_app/core/widgets/my_dialog_box.dart';
+import 'package:my_desktop_app/features/attandence/presentation/widgets/input_task_card.dart';
 
 class MyAttendenceView extends StatefulWidget {
   const MyAttendenceView({super.key});
@@ -39,14 +39,9 @@ class _MyAttendenceViewState extends State<MyAttendenceView> {
   @override
   Widget build(BuildContext context) {
     return Center(
-        child: ElevatedButton(
-            onPressed: () async {
-              showMyDialog(context, MyLoadingWidget(),true);
-              await Future.delayed(Duration(seconds: 2));
-              if (context.mounted) {
-                Navigator.pop(context);
-              }
-            },
-            child: Text("Testing")));
+      child: InkWell(
+        onTap: ()=> showMyDialog(context, CreateTaskScreen()),
+        child: Text("Open")),
+    );
   }
 }

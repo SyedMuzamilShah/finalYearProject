@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:my_desktop_app/features/task/data/models/request/task_prams.dart';
 import 'package:my_desktop_app/features/task/domain/entities/task_entities.dart';
-import 'package:my_desktop_app/features/task/presentation/widgets/task_model.dart';
 import 'package:my_desktop_app/learning/map_learning.dart';
 // 2. Add Task Completion Dialog for Employees
 

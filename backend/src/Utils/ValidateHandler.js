@@ -6,6 +6,7 @@ import { STATUS_CODES } from "../../constant.js";
 export const validateHandler = (req, _, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+        console.log(errors.array())
         throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, 'Validation failed', errors.array());
     }
     next()

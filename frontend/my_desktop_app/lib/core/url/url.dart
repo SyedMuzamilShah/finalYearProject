@@ -18,7 +18,7 @@ class ServerUrl {
   
   static const String employeeCreateRoute = '$baseUrl/admin/employee/create';
   static const String employeeGetRoute = '$baseUrl/admin/employee/get';
-  static const String employeeStatusChangeRoute = '$baseUrl/admin/employee/update-data';
+  static const String employeeStatusChangeRoute = '$baseUrl/admin/employee/status-change';
   static const String employeePictureAllowForProcessing = '$baseUrl/admin/employee/allow-picture';
 
   static const String employeeLoginRoute = '$baseUrl/admin/auth/login';
@@ -41,4 +41,10 @@ class ServerUrl {
   static const String taskCreate = '$baseUrl/admin/task/create';
   static const String taskUpdate = '$baseUrl/admin/task/update';
   static const String taskDelete = '$baseUrl/admin/task/delete';
+
+
+  // Statistics
+  static const String employeeRoleStatistics = '$baseUrl/admin/statistics/employee-role';
+  static const String taskStatistics = '$baseUrl/admin/statistics/task';
+
 }

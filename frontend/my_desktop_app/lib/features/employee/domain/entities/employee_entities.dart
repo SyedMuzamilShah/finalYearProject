@@ -6,7 +6,7 @@ class EmployeeEntities {
   final String name;
   final String email;
   final String? phone;
-  final EmployeeStatus status;
+  EmployeeStatus status;
   final DateTime createdAt;
   final DateTime? updatedAt;
   final String? role;

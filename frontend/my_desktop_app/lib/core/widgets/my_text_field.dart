@@ -40,10 +40,13 @@ class MyCustomTextField extends StatelessWidget {
         controller: controller,
         obscureText: obscureText,
         maxLines: maxLines,
+        
         onChanged: (value)=> onChanged,
         validator: (value) =>
             validatorFuncation != null ? validatorFuncation!(value) : null,
         decoration: InputDecoration(
+          errorText: hasError ? '' : null, // 👈 This hides the default error message
+          errorStyle: const TextStyle(height: 0), // 👈 Prevents spacing
           label: labelText != null
               ? Text(labelText!)
               : null,

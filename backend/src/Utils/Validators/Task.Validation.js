@@ -75,9 +75,17 @@ export const validateTaskAssignRoute = [
     .isArray({ min: 1 })
     .withMessage("employeesId must be a non-empty array"),
 
-  body("employeesId.*")
+  body("employeesId.*.employeeId")
+    .notEmpty()
+    .withMessage("Employee ID is required")
+    .bail()
     .isMongoId()
-    .withMessage("Each employee ID must be a valid MongoDB ObjectId"),
+    .withMessage("Each employeeId must be a valid MongoDB ObjectId"),
+
+  body("employeesId.*.pictureAllowed")
+    .optional()
+    .isBoolean()
+    .withMessage("pictureAllowed must be a boolean"),
 ];
 
 export const validateTaskGetRoute = [
@@ -200,5 +208,3 @@ export const validateTaskVerifiedRoute = [
     .isMongoId()
     .withMessage("Each employee ID must be a valid MongoDB ObjectId"),
 ];
-
-

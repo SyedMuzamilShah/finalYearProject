@@ -1,28 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:my_desktop_app/core/widgets/loading_widget.dart';
+import 'package:my_desktop_app/features/overview/presentation/providers/overview_provider.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
-class LineChartWidget extends StatelessWidget {
+class LineChartWidget extends ConsumerWidget {
   final Color primaryColor;
 
   const LineChartWidget({super.key, required this.primaryColor});
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Team Performance',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        ),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 250,
-          child: SfCartesianChart(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final provider = ref.watch(loadTaskStatisticsProvider(null));
+
+    return provider.when(
+        error: (error, _) => ErrorWidget(error),
+        loading: () => MyLoadingWidget(),
+        data: (data) {
+          final chartData = data.map((d) => SalesData(d.month, d.taskNo.toDouble())).toList();
+          
+          return SfCartesianChart(
+            title: ChartTitle(
+              text: 'Organization Task'
+            ),
             primaryXAxis: CategoryAxis(
               labelStyle: const TextStyle(fontSize: 12),
             ),
@@ -31,13 +31,7 @@ class LineChartWidget extends StatelessWidget {
             ),
             series: <LineSeries<SalesData, String>>[
               LineSeries<SalesData, String>(
-                dataSource: [
-                  SalesData('Jan', 35),
-                  SalesData('Feb', 28),
-                  SalesData('Mar', 34),
-                  SalesData('Apr', 32),
-                  SalesData('May', 40),
-                ],
+                dataSource: chartData,
                 xValueMapper: (SalesData sales, _) => sales.year,
                 yValueMapper: (SalesData sales, _) => sales.sales,
                 color: primaryColor,
@@ -49,13 +43,10 @@ class LineChartWidget extends StatelessWidget {
                 ),
               ),
             ],
-          ),
-        ),
-      ],
-    );
+          );
+        });
   }
 }
-
 
 class SalesData {
   final String year;

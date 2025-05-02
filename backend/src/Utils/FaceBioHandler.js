@@ -25,15 +25,12 @@ const createFormData = (data) => {
 const makeApiRequest = async (url, data, action) => {
     try {
         const credentials = getApiCredentials();
-
         const { form, headers } = createFormData({ ...credentials, ...data });
-        console.log(data)
-        console.log(`[${action}] Request started...`);
 
         const response = await axios.post(url, form, { headers });
 
         console.log(`[${action}] Success:`, response.data);
-        console.log(response.data)
+        // console.log(response.data)
         return response.data;
     } catch (error) {
         const status = error.response?.status || 500;
@@ -59,10 +56,14 @@ export const faceRegistration = async (imageUrl) => {
 };
 
 // Verify a face by comparing a face_token with an image URL
-export const faceVerification = async (faceToken, imageUrl) => {
+export const faceVerification = async (faceToken, localImage) => {
+    // Create read stream
+
+    const imageStream = fs.createReadStream(localImage);
+
     return makeApiRequest(
         'https://api-us.faceplusplus.com/facepp/v3/compare',
-        { face_token1: faceToken, image_url2: imageUrl },
+        { face_token1: faceToken, image_file2: imageStream },
         'Face Verification'
     );
 };

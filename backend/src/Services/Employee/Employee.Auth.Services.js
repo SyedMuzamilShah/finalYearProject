@@ -9,15 +9,18 @@ export const employeeCreateServices = {
     findExistingUser: async ({ userName, email }) => {
         return await employeeModel.findOne({ $or: [{ email }, { userName }] }).lean();
     },
-    finaOrganization: async ({ organizationId }) => {
+    finaOrganization: async ({ organizationId, adminId }) => {
         let org;
+        console.log(`Testing the admin ID : ${adminId}`)
         if (isValidObjectId(organizationId)){
-            org = await organizationModel.findById(organizationId);
+            org = await organizationModel.findOne({_id : organizationId, createdBy : adminId});
         }else {
-            org = await organizationModel.findOne({ organizationId: organizationId });
+            // org = await organizationModel.findOne({ organizationId: organizationId, createdBy : adminId });
+            org = await organizationModel.findOne({ organizationId: organizationId});
         }
         return org
     },
+
     createEmployee: async (dataObject) => {
         const { adminId, userName, email, name, password, role, phoneNumber, organizationId, biometricToken, imageUrl } = dataObject;
 

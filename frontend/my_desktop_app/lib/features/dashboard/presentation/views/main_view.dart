@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:my_desktop_app/core/provider/main_content_provider.dart';
+import 'package:my_desktop_app/core/provider/route_provider.dart';
 import 'package:my_desktop_app/core/widgets/loading_widget.dart';
 import 'package:my_desktop_app/features/attandence/presentation/views/attendence_view.dart';
 import 'package:my_desktop_app/features/dashboard/presentation/providers/view_provider.dart';
@@ -36,8 +38,8 @@ class MyDashBoradView extends ConsumerWidget {
         data: (data) {
           if (data) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              ref.read(breadcrumbProvider.notifier).state =
-                  BreadcrumbItem(route: RouteWidget());
+              ref.read(routeDisplayProvider.notifier).state =
+                  RouteDisplayItem(route: OrganizationRoute());
             });
           }
           return data ? OverView() : OrganizationView();
@@ -78,31 +80,31 @@ class _MyDashBoradState extends ConsumerState<MyDashBorad> {
   void updateMainContent() {
     // if (!mounted) return;
 
-    final breadcrumbNotifier = ref.read(breadcrumbProvider.notifier);
+    final breadcrumbNotifier = ref.read(routeDisplayProvider.notifier);
     switch (sideBarController.selectedIndex) {
       case 0:
         mainContentWidget.value = MyDashBoradView();
         break;
       case 1:
         breadcrumbNotifier.state =
-            BreadcrumbItem(route: Text('employees', style: routeStyle));
+            RouteDisplayItem(route: Text('employees', style: routeStyle));
         mainContentWidget.value = MyEmployeeView();
         break;
       case 2:
         breadcrumbNotifier.state =
-            BreadcrumbItem(route: Text('attendance', style: routeStyle));
+            RouteDisplayItem(route: Text('attendance', style: routeStyle));
         mainContentWidget.value = MyAttendenceView();
 
         break;
       case 3:
         breadcrumbNotifier.state =
-            BreadcrumbItem(route: Text('tasks', style: routeStyle));
+            RouteDisplayItem(route: Text('tasks', style: routeStyle));
         mainContentWidget.value = MyTaskView();
 
         break;
       case 4:
         breadcrumbNotifier.state =
-            BreadcrumbItem(route: Text('settings', style: routeStyle));
+            RouteDisplayItem(route: Text('settings', style: routeStyle));
         mainContentWidget.value = MySettingView();
         break;
     }
@@ -116,7 +118,7 @@ class _MyDashBoradState extends ConsumerState<MyDashBorad> {
 
   @override
   Widget build(BuildContext context) {
-    final breadcrumbs = ref.watch(breadcrumbProvider);
+    final breadcrumbs = ref.watch(routeDisplayProvider);
     routeStyle =
         Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey);
 
@@ -142,7 +144,7 @@ class _MyDashBoradState extends ConsumerState<MyDashBorad> {
                         margin: EdgeInsets.only(top: state.marginTop),
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).primaryColor,
+                          color: Theme.of(context).colorScheme.surface,
                           borderRadius: BorderRadius.vertical(
                             top: Radius.circular(state.borderRadius),
                           ),

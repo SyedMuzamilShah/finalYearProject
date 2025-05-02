@@ -46,7 +46,10 @@ const taskSchema = new mongoose.Schema(
       coordinates: [Number],  // [longitude, latitude]
       address : String
     },
-
+    aroundDistanceMeter: {
+      type : Number,
+      default : 1000
+    },
     status: {
       type: String,
       enum: Object.values(TaskStatus),
@@ -63,8 +66,6 @@ const taskSchema = new mongoose.Schema(
         delete ret.id
         return ret
       }
-      
-      
     }
   }
 );

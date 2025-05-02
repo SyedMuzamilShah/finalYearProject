@@ -30,7 +30,7 @@ class _TaskFormState extends State<TaskForm> {
   final _addressController = TextEditingController();
 
   DateTime _dueDate = DateTime.now().add(const Duration(days: 1));
-  TaskPriority _priority = TaskPriority.medium;
+  // TaskPriority _priority = TaskPriority.medium;
   // String? _assigneeId;
   TaskLocation? _location;
 
@@ -61,8 +61,7 @@ class _TaskFormState extends State<TaskForm> {
       child: SingleChildScrollView(
         child: Consumer(builder: (context, ref, _) {
           final orgState = ref.watch(organizationProvider).selectedOrganization;
-          final organizationId =
-              orgState?.organizationId ?? 'No organization selected';
+
           final taskState = ref.watch(taskProvider);
           final taskNotifier = ref.watch(taskProvider.notifier);
 
@@ -70,11 +69,12 @@ class _TaskFormState extends State<TaskForm> {
             for (var e in taskState.errorList ?? []) e['path']: e['msg']
           };
 
-          if (orgState?.organizationId == null) {
+          if (orgState == null) {
             return Center(
               child: Text("Please selete organization first"),
             );
           }
+
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -87,7 +87,7 @@ class _TaskFormState extends State<TaskForm> {
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 10),
               if (taskState.isLoading) const Center(child: MyLoadingWidget()),
               if (taskState.errorMessage != null)
                 _buildErrorBox(taskState.errorMessage!, colorScheme),
@@ -111,12 +111,11 @@ class _TaskFormState extends State<TaskForm> {
                     (value?.isEmpty ?? true) ? 'Required' : null,
               ),
               _buildDatePicker(),
-              _buildPrioritySelector(),
               _buildLocationSection(context),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () =>
-                    _submitForm(taskNotifier, taskState, organizationId, ref),
+                    _submitForm(taskNotifier, taskState, orgState.id, ref),
                 child: const Text('Create Task'),
               ),
             ],
@@ -197,27 +196,6 @@ class _TaskFormState extends State<TaskForm> {
           setState(() => _dueDate = pickedDate);
         }
       },
-    );
-  }
-
-  Widget _buildPrioritySelector() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('Priority'),
-        Row(
-          children: TaskPriority.values.map((priority) {
-            return Expanded(
-              child: RadioListTile<TaskPriority>(
-                title: Text(priority.name.toUpperCase()),
-                value: priority,
-                groupValue: _priority,
-                onChanged: (value) => setState(() => _priority = value!),
-              ),
-            );
-          }).toList(),
-        ),
-      ],
     );
   }
 

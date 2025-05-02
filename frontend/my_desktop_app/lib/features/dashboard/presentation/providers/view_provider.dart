@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:my_desktop_app/features/dashboard/presentation/views/main_view.dart';
 import 'package:my_desktop_app/features/organization/presentation/providers/organization_provider.dart';
 import 'package:sidebarx/sidebarx.dart';
 
@@ -39,23 +38,9 @@ final ValueNotifier<SidebarState> sidebarState = ValueNotifier(
 );
 
 
-// // main content initilized
-final ValueNotifier<Widget> mainContentWidget =
-    ValueNotifier<Widget>(MyDashBoradView());
 
 
-final mainContentProvider = StateProvider.autoDispose<Widget>((ref) {
-  return MyDashBoradView();
-});
+// final mainContentProvider = StateProvider.autoDispose<Widget>((ref) {
+//   return MyDashBoradView();
+// });
 
-// add the routing on main content
-final breadcrumbProvider = StateProvider.autoDispose<BreadcrumbItem>((ref) => BreadcrumbItem()
-    );
-
-// class hold the navigation routing
-class BreadcrumbItem {
-  final String? name;
-  final Widget? route;
-  
-  BreadcrumbItem({this.name = 'Dashboard', this.route});
-}

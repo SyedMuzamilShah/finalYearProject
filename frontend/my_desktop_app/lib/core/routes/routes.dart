@@ -3,10 +3,7 @@ import 'package:my_desktop_app/features/auth/presentation/views/login_view.dart'
 import 'package:my_desktop_app/features/auth/presentation/views/register_view.dart';
 import 'package:my_desktop_app/features/dashboard/presentation/views/main_view.dart';
 import 'package:my_desktop_app/features/splash/presentation/views/splash_view.dart';
-import 'package:my_desktop_app/features/testing_task/views/my_task_view.dart';
-import 'package:my_desktop_app/learning/designcard/contact_list_page.dart';
 import 'package:my_desktop_app/learning/map_learning.dart';
-import 'package:my_desktop_app/testing_view.dart';
 
 class AppRoutes {
   static const String testing = '/testing';

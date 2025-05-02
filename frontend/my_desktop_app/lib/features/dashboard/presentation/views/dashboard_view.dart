@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:my_desktop_app/core/provider/route_provider.dart';
 import 'package:my_desktop_app/core/widgets/loading_widget.dart';
 import 'package:my_desktop_app/features/dashboard/presentation/providers/view_provider.dart';
 import 'package:my_desktop_app/features/organization/presentation/views/organization_view.dart';
@@ -22,8 +23,8 @@ class MyDashBoradOverView extends ConsumerWidget {
         data: (data) {
           if (data) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              ref.read(breadcrumbProvider.notifier).state =
-                  BreadcrumbItem(route: RouteWidget());
+              ref.read(routeDisplayProvider.notifier).state =
+                  RouteDisplayItem(route: OrganizationRoute());
             });
           }
           return data ? OverView() : OrganizationView();

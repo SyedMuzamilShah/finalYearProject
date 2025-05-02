@@ -8,7 +8,7 @@ import 'package:my_desktop_app/features/task/domain/entities/task_entities.dart'
 import 'package:my_desktop_app/features/task/domain/usecases/task_usecase.dart';
 
 final loadTaskProvider =
-    FutureProvider.family.autoDispose((ref, [TaskReadParams? prams]) async {
+    FutureProvider.family.autoDispose((ref, TaskReadParams prams) async {
   await ref.read(taskProvider.notifier).read(prams);
   if (ref.read(taskProvider).errorMessage != null) {
     throw Exception(ref.read(taskProvider).errorMessage);

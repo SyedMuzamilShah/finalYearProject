@@ -8,7 +8,11 @@ class TaskCreateParams {
   final LocationModel? location;
 
   TaskCreateParams(
-      {required this.title, required this.organizationId ,required this.description, required this.dueDate, this.location});
+      {required this.title,
+      required this.organizationId,
+      required this.description,
+      required this.dueDate,
+      this.location});
 
   toJson() {
     return {
@@ -19,32 +23,42 @@ class TaskCreateParams {
       'location': location?.toJson()
     };
   }
+
+  TaskCreateParams copyWith({String? title, String? description,
+      DateTime? dueDate, String? organizationId, LocationModel? location}) {
+    return TaskCreateParams(
+        title: title ?? this.title,
+        organizationId: organizationId ?? this.organizationId,
+        description: description ?? this.description,
+        dueDate: dueDate ?? this.dueDate);
+  }
 }
+
 class LocationModel {
   final num latitude;
   final num longitude;
   final String? address;
 
-  LocationModel({required this.latitude, required this.longitude, this.address = 'Address'});
+  LocationModel(
+      {required this.latitude,
+      required this.longitude,
+      this.address = 'Address'});
 
   Map<String, dynamic> toJson() {
     return {
       'type': 'Point',
-      'coordinates': [longitude, latitude]};
+      'coordinates': [longitude, latitude]
+    };
   }
 
   factory LocationModel.fromJson(Map<String, dynamic> json) {
     final coords = json['coordinates'] as List;
     return LocationModel(
-      longitude: coords[0],
-      latitude: coords[1],
-      address: json['address']
-    );
+        longitude: coords[0], latitude: coords[1], address: json['address']);
   }
 
   LatLng toLatLng() => LatLng(latitude.toDouble(), longitude.toDouble());
 }
-
 
 class TaskUpdateParams {
   toJson() {

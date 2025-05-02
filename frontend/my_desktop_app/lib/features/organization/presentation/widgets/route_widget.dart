@@ -1,13 +1,14 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:my_desktop_app/features/dashboard/presentation/providers/view_provider.dart';
+import 'package:my_desktop_app/core/provider/main_content_provider.dart';
+import 'package:my_desktop_app/core/provider/route_provider.dart';
 import 'package:my_desktop_app/features/organization/presentation/providers/organization_provider.dart';
 import 'package:my_desktop_app/features/organization/presentation/views/organization_view.dart';
 
-class RouteWidget extends ConsumerWidget {
+class OrganizationRoute extends ConsumerWidget {
   final String? name;
-  const RouteWidget({super.key, this.name});
+  const OrganizationRoute({super.key, this.name});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -31,7 +32,7 @@ class RouteWidget extends ConsumerWidget {
                 // from local data base
                 // notifier.clearAll();
                 // notifier.read();
-                ref.read(breadcrumbProvider.notifier).state = BreadcrumbItem(
+                ref.read(routeDisplayProvider.notifier).state = RouteDisplayItem(
                     route: Text(
                   'organization',
                   style: routeStyle,

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:my_desktop_app/core/provider/main_content_provider.dart';
+import 'package:my_desktop_app/core/provider/route_provider.dart';
 import 'package:my_desktop_app/core/widgets/my_button.dart';
-import 'package:my_desktop_app/features/dashboard/presentation/providers/view_provider.dart';
 import 'package:my_desktop_app/features/organization/domain/entities/organization_entities.dart';
 import 'package:my_desktop_app/features/organization/presentation/providers/organization_provider.dart';
 import 'package:my_desktop_app/features/organization/presentation/widgets/route_widget.dart';
@@ -27,8 +28,8 @@ class OrganizationCardWidget extends ConsumerWidget {
     final response = await ref.read(organizationProvider.notifier).organizationSaved(model);
     if (context.mounted && response) {
       mainContentWidget.value = OverView();
-      ref.read(breadcrumbProvider.notifier).state = BreadcrumbItem(
-        route: RouteWidget(name: ref.read(organizationProvider).selectedOrganization!.name,)
+      ref.read(routeDisplayProvider.notifier).state = RouteDisplayItem(
+        route: OrganizationRoute(name: ref.read(organizationProvider).selectedOrganization!.name,)
       );
     }
   }

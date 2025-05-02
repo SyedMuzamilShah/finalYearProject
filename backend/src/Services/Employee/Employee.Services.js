@@ -1,5 +1,6 @@
 import { STATUS_CODES } from "../../../constant.js";
 import { employeeModel } from "../../Models/Employee.Model.js"
+import { taskAssignmentModel } from "../../Models/TaskAssignment.Model.js";
 import { ErrorResponse } from "../../Utils/Error.js";
 
 export const readEmployeeServices = async () => {
@@ -51,4 +52,12 @@ export const employeeImageUploadServices = async (dataObject) => {
             'failed to set image'
         );
     }
+}
+
+
+export const employeeAssignTaskReadService = async (dataObject) => {
+    const { employeeId } =  dataObject
+    const task = await taskAssignmentModel.find({employeeId : employeeId})
+
+    return {task}
 }

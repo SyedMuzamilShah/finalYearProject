@@ -1,63 +1,77 @@
 import 'package:sidebarx/sidebarx.dart';
 import 'package:flutter/material.dart';
 
-final mySidebarXExtendedTheme = SidebarXTheme(
-          width: 200,
-          decoration: BoxDecoration(
-            color: canvasColor,
-          ),
-);
+mySidebarXExtendedTheme(BuildContext context) => SidebarXTheme(
+      width: 200,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
+      ),
+    );
 
+SidebarXTheme mySidebarXTheme(BuildContext context) {
+  final theme = Theme.of(context);
+  final colorScheme = theme.colorScheme;
 
-final mySidebarXTheme = SidebarXTheme(
-  margin: const EdgeInsets.all(10),
-  decoration: BoxDecoration(
-    color: canvasColor,
-    borderRadius: BorderRadius.circular(20),
-  ),
-  hoverColor: scaffoldBackgroundColor,
-  textStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
-  selectedTextStyle: const TextStyle(color: Colors.white),
-  hoverTextStyle: const TextStyle(
-    color: Colors.white,
-    fontWeight: FontWeight.w500,
-  ),
-  itemTextPadding: const EdgeInsets.only(left: 30),
-  selectedItemTextPadding: const EdgeInsets.only(left: 30),
-  itemDecoration: BoxDecoration(
-    borderRadius: BorderRadius.circular(10),
-    border: Border.all(color: canvasColor),
-  ),
-  selectedItemDecoration: BoxDecoration(
-    borderRadius: BorderRadius.circular(10),
-    border: Border.all(
-      color: actionColor.withValues(alpha: 0.37),
+  return SidebarXTheme(
+    margin: const EdgeInsets.all(10),
+    decoration: BoxDecoration(
+      color: colorScheme.surface.withValues(alpha: 0.95), // Softer base color
+      borderRadius: BorderRadius.circular(16),
     ),
-    gradient: const LinearGradient(
-      colors: [accentCanvasColor, canvasColor],
+    hoverColor: colorScheme.primary.withValues(alpha: 0.05),
+    textStyle: theme.textTheme.bodyMedium?.copyWith(
+      color: colorScheme.onSurface.withValues(alpha: 0.7),
     ),
-    boxShadow: [
-      BoxShadow(
-        color: Colors.black.withValues(alpha: 0.28),
-        blurRadius: 30,
-      )
-    ],
-  ),
-  iconTheme: IconThemeData(
-    color: Colors.white.withValues(alpha: 0.7),
-    size: 20,
-  ),
-  selectedIconTheme: const IconThemeData(
-    color: Colors.white,
-    size: 20,
-  ),
-);
+    selectedTextStyle: theme.textTheme.bodyMedium?.copyWith(
+      color: colorScheme.onSurface,
+      fontWeight: FontWeight.w600,
+    ),
+    hoverTextStyle: theme.textTheme.bodyMedium?.copyWith(
+      color: colorScheme.onSurface,
+      fontWeight: FontWeight.w500,
+    ),
+    itemTextPadding: const EdgeInsets.only(left: 24),
+    selectedItemTextPadding: const EdgeInsets.only(left: 24),
+    itemDecoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: colorScheme.surface),
+    ),
+    selectedItemDecoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(12),
+      gradient: LinearGradient(
+        colors: [
+          colorScheme.primary.withValues(alpha: 0.15),
+          colorScheme.secondary.withValues(alpha: 0.1)
+        ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: colorScheme.shadow.withValues(alpha: 0.15),
+          blurRadius: 12,
+          offset: const Offset(0, 4),
+        )
+      ],
+    ),
+    iconTheme: IconThemeData(
+      color: colorScheme.onSurface.withValues(alpha: 0.6),
+      size: 22,
+    ),
+    selectedIconTheme: IconThemeData(
+      color: colorScheme.primary,
+      size: 22,
+    ),
+  );
+}
 
 
-const primaryColor = Color(0xFF685BFF);
-const canvasColor = Color(0xFF2E2E48);
-const scaffoldBackgroundColor = Color(0xFF464667);
-const accentCanvasColor = Color(0xFF3E3E61);
-const white = Colors.white;
-final actionColor = const Color(0xFF5F5FA7).withValues(alpha: 0.6);
-final divider = Divider(color: white.withValues(alpha: 0.3), height: 1);
+
+
+// const primaryColor = Color(0xFF685BFF);
+// const canvasColor = Color(0xFF2E2E48);
+// const scaffoldBackgroundColor = Color(0xFF464667);
+// const accentCanvasColor = Color(0xFF3E3E61);
+// const white = Colors.white;
+// final actionColor = const Color(0xFF5F5FA7).withValues(alpha: 0.6);
+// final divider = Divider(color: white.withValues(alpha: 0.3), height: 1);

@@ -23,8 +23,8 @@ class ExampleSidebarX extends StatelessWidget {
 
     return SidebarX(
         controller: _controller,
-        theme: mySidebarXTheme,
-        extendedTheme: mySidebarXExtendedTheme,
+        theme: mySidebarXTheme(context),
+        extendedTheme: mySidebarXExtendedTheme(context),
         headerBuilder: (context, extended) {
           return Padding(
             padding: EdgeInsets.symmetric(vertical: 20),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:my_desktop_app/core/widgets/loading_widget.dart';
 import 'package:my_desktop_app/core/widgets/my_button.dart';
 import 'package:my_desktop_app/core/widgets/my_dialog_box.dart';
+import 'package:my_desktop_app/features/organization/presentation/providers/organization_provider.dart';
 import 'package:my_desktop_app/features/task/data/models/request/task_prams.dart';
 import 'package:my_desktop_app/features/task/domain/entities/task_entities.dart';
 import 'package:my_desktop_app/features/task/presentation/provider/task_provider.dart';
@@ -21,7 +22,14 @@ class _MyTaskViewState extends ConsumerState<MyTaskView> {
 
   @override
   Widget build(BuildContext context) {
+    final selectedOrg = ref.read(organizationProvider).selectedOrganization?.id;
+    if (selectedOrg == null) {
+      return Center(
+        child: Text("Please select org first"),
+      );
+    }
     final taskParams = TaskReadParams(
+      organizationId: ref.read(organizationProvider).selectedOrganization!.id,
       status: selectedStatus == 'all' ? null : selectedStatus,
     );
     final response = ref.watch(loadTaskProvider(taskParams));
@@ -54,7 +62,7 @@ class _MyTaskViewState extends ConsumerState<MyTaskView> {
             child: RefreshIndicator(
               onRefresh: () async {
                 ref.invalidate(loadTaskProvider);
-                return Future.value();
+                // return Future.value();
               },
               child: response.when(
                 data: (data) {
@@ -92,10 +100,10 @@ class _MyTaskViewState extends ConsumerState<MyTaskView> {
         spacing: 5,
         mainAxisSize: MainAxisSize.min,
         children: [
-          FloatingActionButton(
-            heroTag: 'View',
-            onPressed: () {},
-          ),
+          // FloatingActionButton(
+          //   heroTag: 'View',
+          //   onPressed: () {},
+          // ),
           FloatingActionButton(
             heroTag: 'Create',
             onPressed: () => showMyDialog(context, TaskForm()),

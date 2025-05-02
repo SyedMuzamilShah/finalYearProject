@@ -66,6 +66,34 @@ class EmployeeNotifier extends StateNotifier<EmployeeState> {
     }
   }
 
+  Future<bool> employeeStatusChange(EmployeeStatusChangeParams params) async {
+  final response = await _usecase.employeeStatusChange(params);
+  return response.fold(
+    (err) {
+      print(err.message);
+      return false;
+    },
+    (succ) {
+      final List<EmployeeEntities> updatedEmployees = [...state.employees];
+
+      final index = updatedEmployees.indexWhere((e) => e.id == params.employeeId);
+      if (index != -1) {
+        updatedEmployees[index].status = params.status;
+      }
+
+      state = state.copyWith(
+        isLoading: false,
+        employees: updatedEmployees,
+        errorMessage: null,
+        errorList: null,
+      );
+      return true;
+
+    },
+  );
+}
+
+
   Future<List<EmployeeEntities>> getAllEmployees([EmployeeReadParams? prams]) async {
     final response = await _usecase.getEmployee(prams);
     return response.fold(

@@ -1,14 +1,18 @@
 import mongoose, { Schema, model } from "mongoose";
 
-const taskAssignmentStatus = {
-
+export const taskAssignmentStatus = {
     ASSIGNED: "ASSIGNED",
+    SUBMITTED : "SUBMITTED",
     INPROGRESS: "INPROGRESS",
     COMPLETED: "COMPLETED",
     VERIFIED: "VERIFIED",
     REJECTED: "REJECTED"
 };
 
+export const taskAssignmentValidateMethod = {
+    AUTO : "AUTO",
+    MANAULLY : "MANAULLY"
+}
 
 const taskAssignmentSchema = new Schema(
     {
@@ -16,6 +20,28 @@ const taskAssignmentSchema = new Schema(
             type: mongoose.Types.ObjectId,
             ref: 'task',
             required: true
+        },
+        faceVerification : {
+            type: Boolean,
+            default : true
+        },
+        confidence : {
+            type: Number,
+            select: false,
+        },
+        threshold : {
+            type:Number,
+            select: false,
+        },
+        validateMethod : {
+            type: String,
+            enum: Object.values(taskAssignmentValidateMethod)
+        },
+        submittedLate : {
+            type : Boolean
+        },
+        submittedAt : {
+            type : Date
         },
         employeeId: {
             type: mongoose.Types.ObjectId,
@@ -27,7 +53,13 @@ const taskAssignmentSchema = new Schema(
             ref: 'Admin',
             required: true
         },
-
+        pictureAllowed : {
+            type : Boolean,
+            default : false
+        },
+        image : {
+            type : String
+        },
         status: {
             type: String,
             enum: Object.values(taskAssignmentStatus),
@@ -38,7 +70,14 @@ const taskAssignmentSchema = new Schema(
             type: Date
         }
     }, {
-    timestamps: true
+    timestamps: true,
+    toJSON: {
+        virtuals: true,
+        transform: function(doc, ret) {
+          delete ret.__v;
+          return ret;
+        }
+    },
 }
 )
 
